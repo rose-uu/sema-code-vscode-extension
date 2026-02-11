@@ -1,0 +1,83 @@
+import React from 'react';
+import PermissionContent from './PermissionContent';
+import PermissionOptions from './PermissionOptions';
+import { ToolContent } from '../../types';
+import { isNotebookType, isMcpToolType, isSkillType, getPermissionTitle } from '../../utils/permissionUtils';
+
+interface ToolPermissionRequestData extends ToolContent {
+    options: {
+        agree: string;
+        allow: string;
+        refuse: string;
+    };
+}
+
+interface PermissionDialogProps {
+    permissionData: ToolPermissionRequestData;
+    onPermissionSelect: (action: 'agree' | 'allow' | 'refuse') => void;
+    onCancel?: () => void;
+}
+
+const PermissionDialog: React.FC<PermissionDialogProps> = ({
+    permissionData,
+    onPermissionSelect,
+    onCancel
+}) => {
+    const handleBashPermission = (action: 'agree' | 'allow' | 'refuse') => {
+        onPermissionSelect(action);
+    };
+
+    // 获取对话框描述文本
+    const getDescriptionText = () => {
+        if (permissionData.toolName === 'Bash') {
+            return 'Do you want to proceed?';
+        } else if (isSkillType(permissionData.toolName)) {
+            return 'Do you want to proceed?';
+        } else if (isMcpToolType(permissionData.toolName)) {
+            return 'Do you want to proceed?';
+        } else if (isNotebookType(permissionData.toolName)) {
+            const cellMatch = permissionData.title.match(/cell:(\d+)/);
+            if (cellMatch) {
+                return 'Do you want to update this notebook cell?';
+            }
+            return 'Do you want to create this notebook?';
+        } else if (permissionData.toolName === 'Edit') {
+            return 'Do you want to update this file?';
+        } else {
+            return 'Do you want to create this file?';
+        }
+    };
+
+    return (
+        <div className="bash-permission-block" tabIndex={0}>
+            <div className="bash-permission-header">
+                <div className="bash-permission-title">
+                    <span className="bash-permission-dot">⏺</span>
+                    <span className="bash-permission-title-text">
+                        {getPermissionTitle(permissionData.toolName)}
+                    </span>
+                    <span className="bash-permission-status">Pending</span>
+                </div>
+            </div>
+            <div className="bash-permission-content">
+                <PermissionContent
+                    toolName={permissionData.toolName}
+                    title={permissionData.title}
+                    content={permissionData.content}
+                />
+                <div className="bash-permission-info">
+                    <div className="bash-permission-description">
+                        {getDescriptionText()}
+                    </div>
+                </div>
+                <PermissionOptions
+                    options={permissionData.options}
+                    onSelect={handleBashPermission}
+                    onCancel={onCancel}
+                />
+            </div>
+        </div>
+    );
+};
+
+export default PermissionDialog;

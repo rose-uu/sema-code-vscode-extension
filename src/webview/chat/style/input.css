@@ -1,0 +1,951 @@
+/* Input组件专用样式 */
+
+/* 新的输入组件样式 */
+.input-box-container {
+    padding: 8px;
+}
+
+.input-box-wrapper {
+    position: relative;
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 6px;
+    padding: 6px;
+}
+
+.input-box-wrapper:focus-within {
+    border-color: var(--vscode-focusBorder);
+}
+
+/* 顶部区域：加号按钮和文件标签 */
+.input-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    min-height: 28px;
+    /* 增加最小高度以容纳文件标签，避免抖动 */
+}
+
+.add-file-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    background-color: transparent;
+    border: 1px solid var(--vscode-button-border, var(--vscode-input-border));
+    border-radius: 3px;
+    color: var(--vscode-foreground);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.add-file-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.add-file-btn:hover:not(:disabled) {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.add-file-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 快捷按钮 */
+.shortcut-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    background-color: transparent;
+    border: 1px solid var(--vscode-button-border, var(--vscode-input-border));
+    border-radius: 3px;
+    color: var(--vscode-descriptionForeground);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.shortcut-btn:hover:not(:disabled) {
+    color: var(--vscode-foreground);
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.shortcut-btn:active:not(:disabled) {
+    opacity: 0.8;
+}
+
+.shortcut-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 已选择的文件标签 */
+.selected-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+    align-items: center;
+}
+
+.selected-file-tag {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    padding: 2px 6px;
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 10px;
+    font-size: 11px;
+    max-width: 180px;
+}
+
+.selected-file-tag .file-tag-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    cursor: pointer;
+    position: relative;
+    width: 18px;
+    /* 固定宽度 */
+    height: 18px;
+    /* 固定高度 */
+}
+
+.selected-file-tag .file-tag-icon .icon-default {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.selected-file-tag .file-tag-icon .icon-remove {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.selected-file-tag:hover .file-tag-icon .icon-default {
+    display: none;
+}
+
+.selected-file-tag:hover .file-tag-icon .icon-remove {
+    display: flex;
+}
+
+.selected-file-tag .file-tag-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.selected-file-tag .file-name {
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* transition: opacity 0.2s; */
+}
+
+.selected-file-tag .file-name:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+/* 目录名称不可点击 */
+.selected-file-tag .file-name.is-directory {
+    cursor: default;
+}
+
+.selected-file-tag .file-name.is-directory:hover {
+    opacity: 1;
+    text-decoration: none;
+}
+
+/* 文件选择器弹窗 */
+.file-picker-popup {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 300px;
+    margin-bottom: 8px;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-dropdown-border);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.file-picker-search {
+    padding: 8px;
+    border-bottom: 1px solid var(--vscode-dropdown-border);
+}
+
+.file-picker-search input {
+    width: 100%;
+    padding: 6px 8px;
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.file-picker-search input:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder);
+}
+
+.file-picker-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.file-picker-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.file-picker-list::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-scrollbarSlider-background);
+    border-radius: 4px;
+}
+
+.file-picker-list::-webkit-scrollbar-thumb:hover {
+    background-color: var(--vscode-scrollbarSlider-hoverBackground);
+}
+
+.file-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.file-picker-item:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.file-picker-item .file-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.file-picker-item .file-icon svg {
+    display: block;
+}
+
+/* 文件信息容器 - 使用flex布局让完整路径靠右 */
+.file-picker-item .file-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    /* 允许子元素缩小 */
+}
+
+/* 文件名 - 不换行，超出显示省略号 */
+.file-picker-item .file-name {
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 40%;
+    /* 限制文件名最大宽度，为路径留空间 */
+}
+
+/* 已打开文件的文件名样式 */
+.file-picker-item .file-name-open {
+    font-weight: 600;
+}
+
+/* 完整路径 - 靠右显示，超出显示省略号 */
+.file-picker-item .file-full-path {
+    flex: 1;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--vscode-descriptionForeground);
+    opacity: 0.7;
+    font-size: 12px;
+    min-width: 0;
+    /* 允许缩小 */
+}
+
+/* 分割线 */
+.file-picker-divider {
+    height: 1px;
+    background-color: var(--vscode-dropdown-border);
+    margin: 4px 8px;
+}
+
+.file-picker-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--vscode-descriptionForeground);
+    font-size: 12px;
+}
+
+/* 快捷面板弹窗 */
+.shortcut-panel-popup {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 8px;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-dropdown-border);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    padding: 0;
+}
+
+.shortcut-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border-radius: 0;
+    transition: background-color 0.15s;
+    color: var(--vscode-foreground);
+    gap: 0;
+    /* 移除默认间距 */
+    min-width: 0;
+    /* 允许 flex 子元素收缩 */
+}
+
+.shortcut-panel-item:first-child {
+    border-radius: 4px 4px 0 0;
+}
+
+.shortcut-panel-item:last-child {
+    border-radius: 0 0 4px 4px;
+}
+
+.shortcut-panel-item:only-child {
+    border-radius: 4px;
+}
+
+.shortcut-panel-item:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+/* 选中项样式（键盘导航） */
+.shortcut-panel-item.selected {
+    background-color: var(--vscode-list-activeSelectionBackground);
+    color: var(--vscode-list-activeSelectionForeground);
+}
+
+.shortcut-panel-item.selected .shortcut-command,
+.shortcut-panel-item.selected .shortcut-desc {
+    color: var(--vscode-list-activeSelectionForeground);
+}
+
+/* / 符号高亮 */
+.shortcut-slash {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--vscode-textLink-foreground);
+}
+
+/* 命令名称正常颜色 */
+.shortcut-command {
+    flex-shrink: 0;
+    font-size: 13px;
+    /* font-weight: bold; */
+    color: var(--vscode-foreground);
+    margin-right: 8px;
+    /* 与描述之间的间距 */
+}
+
+/* 描述文本灰色 */
+.shortcut-desc {
+    flex: 1;
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* 输入框 */
+.input-textarea {
+    width: 100%;
+    padding: 6px 8px;
+    background-color: transparent;
+    color: var(--vscode-input-foreground);
+    border: none;
+    font-size: 12px;
+    resize: none;
+    min-height: 36px;
+    max-height: 200px;
+    line-height: 1.2;
+    transition: max-height 0.3s ease;
+}
+
+.input-textarea.expanded {
+    max-height: 400px;
+}
+
+.input-textarea:focus {
+    outline: none;
+}
+
+.input-textarea::placeholder {
+    color: rgba(128, 128, 128, 0.8);
+    opacity: 1;
+}
+
+/* 命令高亮样式 */
+.input-textarea-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.command-highlight-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    font-size: 12px;
+    line-height: 1.2;
+    padding: 6px 8px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: auto;
+    user-select: none;
+    scrollbar-width: none;
+    /* 隐藏滚动条 */
+    -ms-overflow-style: none;
+    /* IE和Edge隐藏滚动条 */
+}
+
+.command-highlight-overlay::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari和Opera隐藏滚动条 */
+}
+
+.normal-char {
+    color: transparent;
+    user-select: none;
+}
+
+.highlighted-char {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border-radius: 2px;
+    padding: 0 1px;
+    margin: 0 -1px;
+    font-weight: 500;
+}
+
+/* 底部按钮组 */
+.input-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    padding-top: 1px;
+    margin-top: 0;
+}
+
+/* 缩放按钮 */
+.expand-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;
+    color: var(--vscode-foreground);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s;
+}
+
+.expand-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.expand-btn:hover:not(:disabled) {
+    opacity: 1;
+    background-color: var(--vscode-list-hoverBackground);
+    transform: scale(1.05);
+}
+
+.expand-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* 发送/停止按钮 */
+.send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    background-color: var(--vscode-button-background);
+    border: none;
+    border-radius: 50%;
+    /* 完全圆形 */
+    color: var(--vscode-button-foreground);
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+.send-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.send-btn.active {
+    opacity: 1;
+    background-color: var(--vscode-button-background);
+}
+
+.send-btn.active:hover:not(:disabled) {
+    background-color: var(--vscode-button-hoverBackground);
+    transform: scale(1.1);
+}
+
+.send-btn:disabled {
+    cursor: not-allowed;
+}
+
+
+
+/* Token Progress Circle */
+.token-progress {
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+    gap: 4px;
+    margin-left: auto;
+    position: relative;
+    background-color: rgba(128, 128, 128, 0.08);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.token-circle {
+    width: 10px;
+    height: 10px;
+    transform: rotate(-90deg);
+}
+
+.token-circle-bg {
+    fill: none;
+    stroke: rgba(128, 128, 128, 0.2);
+    stroke-width: 3;
+}
+
+.token-circle-progress {
+    fill: none;
+    stroke: var(--vscode-foreground);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.3s ease;
+    opacity: 0.6;
+}
+
+.token-percentage {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    min-width: 35px;
+    text-align: right;
+    letter-spacing: 0.02em;
+}
+
+/* 左下角容器 - 包含 Agent 模式和模型信息 */
+.bottom-left-container {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100% - 80px);
+}
+
+/* 分隔符样式 */
+.bottom-separator {
+    color: var(--vscode-descriptionForeground);
+    opacity: 0.4;
+    font-size: 11px;
+    user-select: none;
+}
+
+/* Agent 模式容器 */
+.agent-mode-container {
+    position: relative;
+    min-width: 0;
+}
+
+/* Agent 模式按钮 */
+.agent-mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    background: rgba(128, 128, 128, 0.15);
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+/* Agent 模式按钮 - 根据当前模式设置颜色 */
+.agent-mode-btn.mode-agent {
+    background: rgba(128, 128, 128, 0.15);
+    color: var(--vscode-descriptionForeground);
+}
+
+.agent-mode-btn.mode-plan {
+    background: rgba(255, 186, 73, 0.2);
+    color: #ffba49;
+}
+
+.agent-mode-btn:hover {
+    filter: brightness(1.15);
+}
+
+.agent-mode-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.agent-mode-btn:disabled:hover {
+    filter: none;
+}
+
+/* Agent 模式按钮内的图标 */
+.agent-mode-btn svg {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    color: inherit;
+    stroke: currentColor;
+}
+
+/* Agent 模式文本 */
+.agent-mode-text {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    transition: color 0.15s;
+}
+
+.agent-mode-btn:hover .agent-mode-text {
+    color: var(--vscode-foreground);
+}
+
+/* Agent 模式菜单弹窗 */
+.agent-mode-menu-popup {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    min-width: 100px;
+    max-width: 160px;
+    width: max-content;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+    border-radius: 4px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease-out;
+}
+
+/* Agent 模式菜单项 */
+.agent-mode-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--vscode-foreground);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.agent-mode-menu-item:hover {
+    background: rgba(128, 128, 128, 0.15);
+}
+
+/* 当前 Agent 模式项 */
+.agent-mode-menu-item.agent-mode-current {
+    cursor: default;
+}
+
+.agent-mode-menu-item.agent-mode-current:hover {
+    background: rgba(128, 128, 128, 0.08);
+}
+
+/* Agent 模式菜单文本 */
+.agent-mode-menu-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Agent 模式检查图标 */
+.agent-mode-check-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: #4ec9b0;
+}
+
+/* Agent 模式标签样式 */
+.mode-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.mode-agent {
+    background: rgba(78, 201, 176, 0.2);
+    color: #4ec9b0;
+}
+
+.mode-ask {
+    background: rgba(255, 186, 73, 0.2);
+    color: #ffba49;
+}
+
+.mode-plan {
+    background: rgba(149, 117, 255, 0.2);
+    color: #9575ff;
+}
+
+/* 模型信息容器 */
+.model-info-container {
+    position: relative;
+    min-width: 0;
+}
+
+/* 模型信息按钮 */
+.model-info-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+    background: transparent;
+    border: none;
+    color: var(--vscode-descriptionForeground);
+    font-size: 11px;
+    cursor: pointer;
+    transition: color 0.15s;
+    max-width: min(200px, calc(100vw - 120px));
+    overflow: hidden;
+    min-width: 0;
+}
+
+.model-info-btn:hover {
+    color: var(--vscode-foreground);
+}
+
+.model-info-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.model-info-btn:disabled:hover {
+    color: var(--vscode-descriptionForeground);
+}
+
+/* 模型按钮内的图标 */
+.model-info-btn svg {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    color: inherit;
+    stroke: currentColor;
+}
+
+/* 模型名文本 */
+.model-name-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    transition: color 0.15s;
+}
+
+.model-info-btn:hover .model-name-text {
+    color: var(--vscode-foreground);
+}
+
+/* 模型菜单下拉图标 */
+.model-chevron {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    color: var(--vscode-descriptionForeground);
+    transition: color 0.15s;
+}
+
+.model-info-btn:hover .model-chevron {
+    color: var(--vscode-foreground);
+}
+
+/* 模型菜单弹窗 */
+.model-menu-popup {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    min-width: 180px;
+    max-width: min(320px, calc(100vw - 20px));
+    width: max-content;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+    border-radius: 4px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease-out;
+}
+
+/* 在极窄屏幕下调整菜单位置 */
+@media (max-width: 360px) {
+    .model-menu-popup {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        min-width: 160px;
+        max-width: calc(100vw - 40px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* 模型菜单项 */
+.model-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--vscode-foreground);
+    cursor: pointer;
+    transition: background 0.15s;
+    min-width: 0;
+}
+
+/* 在极窄屏幕下减少内边距 */
+@media (max-width: 360px) {
+    .model-menu-item {
+        padding: 6px 8px;
+        gap: 6px;
+        font-size: 11px;
+    }
+}
+
+.model-menu-item:hover {
+    background: rgba(128, 128, 128, 0.15);
+}
+
+/* 当前模型项 */
+.model-menu-item.model-current {
+    cursor: default;
+}
+
+.model-menu-item.model-current:hover {
+    background: rgba(128, 128, 128, 0.08);
+}
+
+/* 模型菜单文本 */
+.model-menu-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+/* 模型菜单右侧图标 */
+.model-check-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: #4ec9b0;
+}
+
+/* 模型菜单分隔线 */
+.model-menu-divider {
+    height: 1px;
+    background: var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+    margin: 0;
+}
+
+/* Light主题下的input组件背景 */
+.vscode-light .input-box-wrapper {
+    background-color: #ffffff;
+}
+
+.vscode-light .input-textarea {
+    background-color: #ffffff;
+}
