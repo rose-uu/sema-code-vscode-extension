@@ -4,7 +4,7 @@
   "description": "VSCode integration for code-agent",
   "version": "1.0.3",
   "icon": "imgs/icon.png",
-  "publisher": "airc",
+  "publisher": "SemaCode",
   "license": "MIT",
   "repository": {
     "type": "git",

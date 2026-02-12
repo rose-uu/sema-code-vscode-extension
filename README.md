@@ -4,10 +4,6 @@
 
 <img src="./imgs/sema.gif" alt="Sema Code VSCode Extension" />  
 
-<br/>
-
-更多详情请访问我们的 [GitHub 仓库](https://github.com/midea-ai/sema-code-vscode-extension)。
-
 
 ## 核心特性
 - **自然语言指令** - 通过自然语言直接驱动编程任务
