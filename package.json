@@ -106,10 +106,10 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
-    "sema-core": "^1.0.2",
     "@types/dompurify": "^3.0.5",
     "@vscode/ripgrep": "^1.17.0",
     "diff": "^8.0.2",
-    "dompurify": "^3.3.1"
+    "dompurify": "^3.3.1",
+    "sema-core": "^1.0.3"
   }
 }
