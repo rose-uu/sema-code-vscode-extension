@@ -1,6 +1,6 @@
 ## 项目概述
 
-**Sema Code VSCode Extension** 是基于 Sema Code Core 引擎的智能编程插件。
+**Sema Code VSCode Extension** 是基于 [Sema Code Core](https://github.com/midea-ai/sema-code-core) 引擎的智能编程插件。
 
 <img src="./imgs/sema.gif" alt="Sema Code VSCode Extension" />  
 
