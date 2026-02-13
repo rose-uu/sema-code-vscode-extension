@@ -77,19 +77,18 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
     'minimax': {
         name: 'MiniMax',
         baseURL: 'https://api.minimaxi.com/anthropic',
-        modelsUrl: 'https://api.minimaxi.com/v1',
         baseURLPlaceholder: 'https://api.minimaxi.com/anthropic',
         apiKeyPlaceholder: '输入您的 MiniMax API Key',
-        defaultModel: 'MiniMax-M2.1',
+        defaultModel: 'MiniMax-M2.5',
         apikeyUrl: 'https://platform.minimaxi.com/user-center/basic-information/interface-key',
     },
     'deepseek': {
         name: 'DeepSeek',
         baseURL: 'https://api.deepseek.com/anthropic',
-        modelsUrl: 'https://api.deepseek.com',
+        modelsUrl: 'https://api.deepseek.com/v1',
         baseURLPlaceholder: 'https://api.deepseek.com/anthropic',
         apiKeyPlaceholder: '输入您的 DeepSeek API Key',
-        defaultModel: 'deepseek-chat',
+        defaultModel: 'deepseek-reasoner',
         apikeyUrl: 'https://platform.deepseek.com/api_keys',
     },
     'glm': {
@@ -97,7 +96,7 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         baseURL: 'https://open.bigmodel.cn/api/paas/v4',
         baseURLPlaceholder: 'https://open.bigmodel.cn/api/paas/v4',
         apiKeyPlaceholder: '输入您的智谱 API Key',
-        defaultModel: 'glm-4.7',
+        defaultModel: 'glm-5',
         apikeyUrl: 'https://bigmodel.cn/usercenter/proj-mgmt/apikeys',
     },
     'openrouter': {
