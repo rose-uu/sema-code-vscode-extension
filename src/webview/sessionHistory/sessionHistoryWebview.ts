@@ -25,7 +25,7 @@ export class SessionHistoryWebviewProvider {
     /**
      * 显示历史会话面板
      */
-    public async show(extensionUri: vscode.Uri, currentSessionId: string | null, currentContent: string[]) {
+    public async show(extensionUri: vscode.Uri) {
 
         // 如果面板已存在，则显示并更新内容
         if (this.panel) {
@@ -57,7 +57,7 @@ export class SessionHistoryWebviewProvider {
                 case 'webviewReady':
                     // React 应用已准备好，发送会话数据
                     const currentSessions = await this.getAllSessions();
-                    const activeSessionId = this.sessionHistoryManager['semaWrapper'].currentSessionId;
+                    const activeSessionId = this.sessionHistoryManager.getCurrentSessionId();
                     this.panel?.webview.postMessage({
                         type: 'updateSessions',
                         sessions: currentSessions,
@@ -77,7 +77,7 @@ export class SessionHistoryWebviewProvider {
                     break;
                 case 'deleteSession':
                     // 获取当前会话ID，禁止删除当前会话
-                    const currentActiveSessionId = this.sessionHistoryManager['semaWrapper'].currentSessionId;
+                    const currentActiveSessionId = this.sessionHistoryManager.getCurrentSessionId();
                     if (message.sessionId === currentActiveSessionId) {
                         vscode.window.showWarningMessage('无法删除当前会话');
                         return;
@@ -119,7 +119,7 @@ export class SessionHistoryWebviewProvider {
      */
     private updateContent(sessions: Session[]) {
         if (this.panel) {
-            const currentSessionId = this.sessionHistoryManager['semaWrapper'].currentSessionId;
+            const currentSessionId = this.sessionHistoryManager.getCurrentSessionId();
             this.panel.webview.postMessage({
                 type: 'updateSessions',
                 sessions: sessions,

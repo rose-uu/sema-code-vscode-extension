@@ -14,12 +14,23 @@ export interface Session {
 }
 
 /**
+ * 按项目存储的数据结构
+ */
+interface ProjectData {
+    projectPath: string;
+    lastUpdatedAt: number; // 项目最后更新时间，用于淘汰旧项目
+    sessions: Session[];
+}
+
+/**
  * SessionHistoryManager 类 - 管理历史会话
  * 负责保存、加载、删除历史会话
+ * 存储结构：按项目分组，最多保留 MAX_PROJECTS 个项目，每个项目最多 MAX_SESSIONS 条记录
  */
 export class SessionHistoryManager {
-    private static readonly STORAGE_KEY = 'sema.sessionHistory';
-    private static readonly MAX_SESSIONS = 50;  // 所有项目只保留最近的50会话历史
+    private static readonly STORAGE_KEY = 'sema.sessionHistoryV2';
+    private static readonly MAX_SESSIONS = 50;  // 每个项目最多保留50条会话历史
+    private static readonly MAX_PROJECTS = 20;  // 最多保留20个项目
     private context: vscode.ExtensionContext;
     private projectPath: string;
     private semaWrapper: any;
@@ -31,14 +42,15 @@ export class SessionHistoryManager {
     }
 
     /**
-     * 将消息历史中所有 running 状态的 Task 改为 interrupted
+     * 将消息历史中所有 running 状态的 Task 改为 interrupted（返回新数组，不修改原对象）
      */
-    private markRunningTasksAsInterrupted(messages: any[]): void {
-        for (const message of messages) {
+    private markRunningTasksAsInterrupted(messages: any[]): any[] {
+        return messages.map(message => {
             if (message.type === 'tool' && message.toolName === 'Task' && message.content?.status === 'running') {
-                message.content.status = 'interrupted';
+                return { ...message, content: { ...message.content, status: 'interrupted' } };
             }
-        }
+            return message;
+        });
     }
 
     /**
@@ -80,9 +92,8 @@ export class SessionHistoryManager {
             return;
         }
 
-        // 将所有 running 状态的 Task 改为 interrupted
-        this.markRunningTasksAsInterrupted(messages);
-        // console.log('saveSession:', JSON.stringify(messages))
+        // 将所有 running 状态的 Task 改为 interrupted（返回新数组，不污染原始消息历史）
+        messages = this.markRunningTasksAsInterrupted(messages);
 
         // 直接从 semaWrapper 读取标题
         const title = this.semaWrapper.title;
@@ -90,57 +101,69 @@ export class SessionHistoryManager {
             return;
         }
 
-        // 获取所有会话（包含所有项目）
-        const allSessions = await this.getAllSessionsRaw();
+        const now = Date.now();
+        const allProjects = await this.getAllProjectsRaw();
 
-        // 更新现有会话
-        const existingIndex = allSessions.findIndex(s => s.projectPath === this.projectPath && s.id === sessionId);
+        // 查找当前项目
+        let projectIndex = allProjects.findIndex(p => p.projectPath === this.projectPath);
+        if (projectIndex === -1) {
+            // 新项目：如果超过最大项目数，删除最旧的项目
+            if (allProjects.length >= SessionHistoryManager.MAX_PROJECTS) {
+                allProjects.sort((a, b) => a.lastUpdatedAt - b.lastUpdatedAt);
+                allProjects.splice(0, allProjects.length - SessionHistoryManager.MAX_PROJECTS + 1);
+            }
+            allProjects.push({ projectPath: this.projectPath, lastUpdatedAt: now, sessions: [] });
+            projectIndex = allProjects.length - 1;
+        }
+
+        const projectData = allProjects[projectIndex];
+        const existingIndex = projectData.sessions.findIndex(s => s.id === sessionId);
+
         if (existingIndex !== -1) {
-            const existingSession = allSessions[existingIndex];
-
             // 更新现有会话（保留创建时间）
-            allSessions[existingIndex] = {
+            projectData.sessions[existingIndex] = {
                 id: sessionId,
                 title: title,
-                createdAt: existingSession.createdAt || Date.now(), // 保留创建时间
-                updatedAt: Date.now(), // 更新时间
+                createdAt: projectData.sessions[existingIndex].createdAt || now,
+                updatedAt: now,
                 content: [...messages],
                 projectPath: this.projectPath
             };
-
-            // 保存到存储
-            await this.context.globalState.update(SessionHistoryManager.STORAGE_KEY, allSessions);
-        }
-        // 新会话，添加到会话列表
-        else {
-            const now = Date.now();
+        } else {
+            // 新会话，添加到头部
             const session: Session = {
                 id: sessionId,
                 title: title,
-                createdAt: now, // 创建时间
-                updatedAt: now, // 更新时间（初始时与创建时间相同）
+                createdAt: now,
+                updatedAt: now,
                 content: [...messages],
                 projectPath: this.projectPath
             };
+            projectData.sessions.unshift(session);
 
-            // 添加新会话到所有会话列表
-            allSessions.unshift(session);
-
-            // 如果总的会话超过最大数量，删除最旧的
-            if (allSessions.length > SessionHistoryManager.MAX_SESSIONS) {
-                allSessions.splice(SessionHistoryManager.MAX_SESSIONS);
+            // 超过每项目最大数量，删除最旧的
+            if (projectData.sessions.length > SessionHistoryManager.MAX_SESSIONS) {
+                projectData.sessions.splice(SessionHistoryManager.MAX_SESSIONS);
             }
-
-            // 保存到存储
-            await this.context.globalState.update(SessionHistoryManager.STORAGE_KEY, allSessions);
         }
+
+        projectData.lastUpdatedAt = now;
+        await this.context.globalState.update(SessionHistoryManager.STORAGE_KEY, allProjects);
     }
 
     /**
-     * 获取所有会话（不过滤项目，用于内部操作）
+     * 获取所有项目数据（内部使用）
      */
-    private async getAllSessionsRaw(): Promise<Session[]> {
-        return this.context.globalState.get<Session[]>(SessionHistoryManager.STORAGE_KEY, []);
+    private async getAllProjectsRaw(): Promise<ProjectData[]> {
+        return this.context.globalState.get<ProjectData[]>(SessionHistoryManager.STORAGE_KEY, []);
+    }
+
+    /**
+     * 获取当前项目数据
+     */
+    private async getCurrentProjectData(): Promise<ProjectData | null> {
+        const allProjects = await this.getAllProjectsRaw();
+        return allProjects.find(p => p.projectPath === this.projectPath) || null;
     }
 
     /**
@@ -171,19 +194,28 @@ export class SessionHistoryManager {
     }
 
     /**
+     * 获取当前激活的会话ID
+     */
+    public getCurrentSessionId(): string | null {
+        return this.semaWrapper.currentSessionId;
+    }
+
+    /**
      * 获取当前项目的所有会话
      */
     public async getAllSessions(): Promise<Session[]> {
-        const allSessions = await this.getAllSessionsRaw();
+        const projectData = await this.getCurrentProjectData();
         const currentSessionId = this.semaWrapper.currentSessionId;
-        // console.log(`所有会话: ${allSessions.length}`)
 
-        // 过滤出当前项目的会话
-        const projectSessions = allSessions.filter(session => session.projectPath === this.projectPath);
+        if (!projectData) {
+            return [];
+        }
+
+        const sessions = projectData.sessions;
 
         // 分离当前会话和其他会话
-        const currentSession = projectSessions.find(s => s.id === currentSessionId);
-        const otherSessions = projectSessions.filter(s => s.id !== currentSessionId);
+        const currentSession = sessions.find(s => s.id === currentSessionId);
+        const otherSessions = sessions.filter(s => s.id !== currentSessionId);
 
         // 其他会话按更新时间降序排列
         otherSessions.sort((a, b) => b.updatedAt - a.updatedAt);
@@ -196,11 +228,11 @@ export class SessionHistoryManager {
      * 根据ID获取特定会话
      */
     public async getSession(sessionId: string): Promise<Session | null> {
-        // console.log(`获取会话: ${sessionId}`)
-        const allSessions = await this.getAllSessionsRaw();
-        const session = allSessions.find(s => s.id === sessionId && s.projectPath === this.projectPath);
-        // console.log('getSession:', JSON.stringify(session))
-        return session || null;
+        const projectData = await this.getCurrentProjectData();
+        if (!projectData) {
+            return null;
+        }
+        return projectData.sessions.find(s => s.id === sessionId) || null;
     }
 
     /**
@@ -208,27 +240,19 @@ export class SessionHistoryManager {
      */
     public async deleteSession(sessionId: string): Promise<void> {
         console.log(`删除会话: ${sessionId}`)
-        const allSessions = await this.getAllSessionsRaw();
-        const filteredSessions = allSessions.filter(s => !(s.id === sessionId && s.projectPath === this.projectPath));
-
-        // 只有在实际删除了会话时才更新存储
-        if (filteredSessions.length < allSessions.length) {
-            await this.context.globalState.update(SessionHistoryManager.STORAGE_KEY, filteredSessions);
-        }
-    }
-
-    /**
-     * 加载历史会话到当前会话
-     */
-    public async loadSession(sessionId: string): Promise<any[]> {
-        console.log(`加载会话: ${sessionId}`)
-        const session = await this.getSession(sessionId);
-        if (!session) {
-            throw new Error('会话不存在或已被删除');
+        const allProjects = await this.getAllProjectsRaw();
+        const projectIndex = allProjects.findIndex(p => p.projectPath === this.projectPath);
+        if (projectIndex === -1) {
+            return;
         }
 
-        // 返回会话内容供调用方使用
-        return session.content || [];
+        const projectData = allProjects[projectIndex];
+        const originalLength = projectData.sessions.length;
+        projectData.sessions = projectData.sessions.filter(s => s.id !== sessionId);
+
+        if (projectData.sessions.length < originalLength) {
+            await this.context.globalState.update(SessionHistoryManager.STORAGE_KEY, allProjects);
+        }
     }
 
     /**
@@ -236,9 +260,9 @@ export class SessionHistoryManager {
      */
     public async clearAllSessions(): Promise<void> {
         console.log(`清空会话: ${this.projectPath}`)
-        const allSessions = await this.getAllSessionsRaw();
-        const otherProjectSessions = allSessions.filter(s => s.projectPath !== this.projectPath);
-        await this.context.globalState.update(SessionHistoryManager.STORAGE_KEY, otherProjectSessions);
+        const allProjects = await this.getAllProjectsRaw();
+        const filtered = allProjects.filter(p => p.projectPath !== this.projectPath);
+        await this.context.globalState.update(SessionHistoryManager.STORAGE_KEY, filtered);
     }
 }
 

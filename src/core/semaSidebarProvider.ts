@@ -38,6 +38,9 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
     // 处理器实例
     private messageHandler!: MessageHandler;                 // 消息处理器：处理Webview与扩展之间的消息通信
 
+    // 保存防抖计时器，避免短时间内多次触发保存
+    private saveSessionTimer?: NodeJS.Timeout;
+
     constructor(
         private readonly context: vscode.ExtensionContext
 
@@ -191,6 +194,9 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
 
             await this.coreManager.createSession();
 
+            // 刷新历史会话面板（如果已打开）
+            this.sessionHistoryWebviewProvider.refreshSessionList();
+
         } catch (error) {
             console.error('Error starting new session:', error);
             // 即使出错也要启用输入框
@@ -206,11 +212,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
     public async openHistoryPanel() {
         try {
             // 显示历史会话面板
-            await this.sessionHistoryWebviewProvider.show(
-                this.context.extensionUri,
-                null,
-                []
-            );
+            await this.sessionHistoryWebviewProvider.show(this.context.extensionUri);
 
         } catch (error) {
             console.error('Error opening history panel:', error);
@@ -254,7 +256,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
                     await this.coreManager.createSession(sessionId);
 
                     await this.coreManager.updateMessageHistory(session.content);
-                    await this.coreManager.updateTitle(session.title);
+                    this.coreManager.updateTitle(session.title);
 
                     // vscode.window.showInformationMessage(`已加载会话：${session.title}`);
                 } catch (error) {
@@ -345,14 +347,24 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
     }
 
     /**
+     * 防抖保存会话，避免短时间内多次触发
+     */
+    private debouncedSaveSession(): void {
+        clearTimeout(this.saveSessionTimer);
+        this.saveSessionTimer = setTimeout(async () => {
+            try {
+                await this.sessionHistoryManager.saveSession();
+            } catch (error) {
+                console.error('Error saving session:', error);
+            }
+        }, 300);
+    }
+
+    /**
      * 处理消息完成事件
      */
-    private async handleMessageComplete(): Promise<void> {
-        try {
-            await this.sessionHistoryManager.saveSession();
-        } catch (error) {
-            console.error('Error saving session on message complete:', error);
-        }
+    private handleMessageComplete(): void {
+        this.debouncedSaveSession();
     }
 
     /**
@@ -366,12 +378,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
 
         // 当状态切换成idle时触发会话记录保存
         if (state === 'idle') {
-            try {
-                await this.sessionHistoryManager.saveSession();
-                console.log('Session automatically saved on idle state');
-            } catch (error) {
-                console.error('Error auto-saving session:', error);
-            }
+            this.debouncedSaveSession();
         }
     }
 
@@ -662,15 +669,11 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
     /**
      * 处理主题更新
      */
-    private async handleTopicUpdate(topic: any): Promise<void> {
-        try {
-            await this.sessionHistoryManager.saveSession();
+    private handleTopicUpdate(_topic: any): void {
+        this.debouncedSaveSession();
 
-            if (this.sessionHistoryWebviewProvider) {
-                this.sessionHistoryWebviewProvider.refreshSessionList();
-            }
-        } catch (error) {
-            console.error('Error saving session after topic update:', error);
+        if (this.sessionHistoryWebviewProvider) {
+            this.sessionHistoryWebviewProvider.refreshSessionList();
         }
     }
 
