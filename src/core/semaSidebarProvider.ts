@@ -48,7 +48,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (workspaceFolders && workspaceFolders.length > 0) {
             const workspacePath = workspaceFolders[0].uri.fsPath;
-            console.log('Workspace path:', workspacePath);
+           // console.log('Workspace path:', workspacePath);
             this.workingDir = workspacePath
         } else {
             this.workingDir = path.join(os.homedir(), 'sema-demo');
@@ -171,7 +171,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
         try {
             // 如果当前正在运行，先中断并等待完成
             if (this.coreManager.getCurrentState() === 'processing') {
-                console.log('[NewSession] 当前正在运行，先中断会话');
+               // console.log('[NewSession] 当前正在运行，先中断会话');
                 const completed = await this.coreManager.interruptAndWait();
                 if (!completed) {
                     console.warn('[NewSession] 等待中断完成超时，继续创建新会话');
@@ -233,7 +233,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
 
             // 如果当前正在运行，先中断并等待完成
             if (this.coreManager.getCurrentState() === 'processing') {
-                console.log('[LoadSession] 当前正在运行，先中断会话');
+               // console.log('[LoadSession] 当前正在运行，先中断会话');
                 const completed = await this.coreManager.interruptAndWait();
                 if (!completed) {
                     console.warn('[LoadSession] 等待中断完成超时，继续加载会话');
@@ -309,7 +309,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
             // 加载自定义命令
             try {
                 const customCommands = await this.coreManager.getCustomCommands();
-                console.log('[Backend] Loaded custom commands:', customCommands.length, 'commands');
+               // console.log('[Backend] Loaded custom commands:', customCommands.length, 'commands');
 
                 // 通知前端更新命令列表
                 this.chatWebviewProvider.postMessage({
@@ -334,7 +334,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
      * 处理模型更新事件
      */
     private handleModelUpdate(data: any): void {
-        console.log('Model update data:', data);
+       // console.log('Model update data:', data);
 
         // 向webview发送模型更新消息
         this.chatWebviewProvider.postMessage({
@@ -394,7 +394,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
 
             // 第一步：处理附加的文件信息
             if (files && files.length > 0) {
-                console.log('Processing user input with files:', files);
+               // console.log('Processing user input with files:', files);
 
                 const fileContext = files.map(file => {
                     if (file.startLine && file.endLine) {
@@ -485,7 +485,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
      * Bash权限处理
      */
     private bashPermission(action: string, command: string): void {
-        console.log('Bash permission request:', action, command);
+       // console.log('Bash permission request:', action, command);
         // 这里可以实现权限确认逻辑
         // 暂时直接允许
         this.chatWebviewProvider.postMessage({
@@ -518,7 +518,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
      * 处理使用统计更新
      */
     private handleUsageUpdate(data: any): void {
-        console.log('Usage update:', data);
+       // console.log('Usage update:', data);
 
         // 向前端发送使用统计更新
         this.chatWebviewProvider.postMessage({
@@ -531,7 +531,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
      * 处理待办事项更新
      */
     private handleTodosUpdate(todos: any): void {
-        console.log('Todos update:', todos);
+       // console.log('Todos update:', todos);
 
         // 向前端发送待办事项更新
         this.chatWebviewProvider.postMessage({
@@ -544,7 +544,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
      * 处理工具权限响应
      */
     private handleToolPermissionResponse(response: any): void {
-        console.log('Tool permission response:', response);
+       // console.log('Tool permission response:', response);
 
         // 将权限响应传递给SemaCoreWrapper
         this.coreManager.respondToToolPermission(response);
@@ -569,7 +569,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
      * 处理问答响应
      */
     private handleAskQuestionResponse(response: any): void {
-        console.log('Ask question response:', response);
+       // console.log('Ask question response:', response);
 
         // 将问答响应传递给SemaCoreWrapper
         this.coreManager.respondToAskQuestion(response);
@@ -590,11 +590,11 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
      * 处理退出Plan模式响应
      */
     private async handlePlanExitResponse(response: any): Promise<void> {
-        console.log('Plan exit response:', response);
+       // console.log('Plan exit response:', response);
 
         // 如果用户选择 clearContextAndStart，清空历史信息
         if (response.selected === 'clearContextAndStart') {
-            console.log('[PlanExitResponse] 用户选择清空上下文，清理历史信息');
+           // console.log('[PlanExitResponse] 用户选择清空上下文，清理历史信息');
 
             // 清空消息历史
             this.coreManager.clearMessageHistory();
@@ -631,7 +631,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
         this.chatWebviewProvider.postMessage({
             type: 'enableInput'
         });
-        console.log('[EnableInput]');
+       // console.log('[EnableInput]');
     }
 
     /**
@@ -663,7 +663,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
             type: 'clearTodos'
         });
 
-        console.log('[ClearAllPanels] 已清理所有面板状态');
+       // console.log('[ClearAllPanels] 已清理所有面板状态');
     }
 
     /**
@@ -683,7 +683,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
     private async updateAgentMode(mode: 'Agent' | 'Plan'): Promise<void> {
         try {
             await this.coreManager.updateAgentMode(mode);
-            console.log('Agent mode updated to:', mode);
+           // console.log('Agent mode updated to:', mode);
         } catch (error) {
             console.error('Error updating agent mode:', error);
         }

@@ -23,13 +23,13 @@ export class SystemConfigManager {
 
             // 如果没有存储的配置，创建并存储默认配置
             if (!stored) {
-                console.log('No stored system config found, creating and storing default config');
+               // console.log('No stored system config found, creating and storing default config');
                 const defaultConfigCopy = { ...defaultConfig };
 
                 // 异步保存默认配置，但不等待完成
                 this.context.globalState.update(SystemConfigManager.CONFIG_KEY, defaultConfigCopy)
                     .then(() => {
-                        console.log('Default system config saved successfully');
+                       // console.log('Default system config saved successfully');
                     }, (error: any) => {
                         console.error('Error saving default system config:', error);
                     });
@@ -58,7 +58,7 @@ export class SystemConfigManager {
     public async saveSystemConfig(config: UpdatableCoreConfig): Promise<void> {
         try {
             await this.context.globalState.update(SystemConfigManager.CONFIG_KEY, config);
-            console.log('System config updated:', config);
+           // console.log('System config updated:', config);
         } catch (error) {
             console.error('Error saving system config:', error);
             throw new Error(`保存系统配置失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -76,7 +76,7 @@ export class SystemConfigManager {
             const currentConfig = this.getSystemConfig();
             const newConfig = { ...currentConfig, [key]: value };
             await this.context.globalState.update(SystemConfigManager.CONFIG_KEY, newConfig);
-            console.log(`System config updated: ${String(key)} =`, value);
+           // console.log(`System config updated: ${String(key)} =`, value);
 
         } catch (error) {
             console.error('Error saving system config by key:', error);
@@ -103,7 +103,7 @@ export class SystemConfigManager {
     public async saveUseTools(useTools: string[] | null): Promise<void> {
         try {
             await this.context.globalState.update(SystemConfigManager.USE_TOOLS_KEY, useTools);
-            console.log('UseTools config saved successfully:', useTools);
+           // console.log('UseTools config saved successfully:', useTools);
         } catch (error) {
             console.error('Error saving useTools config:', error);
             throw new Error(`保存 useTools 配置失败: ${error instanceof Error ? error.message : '未知错误'}`);

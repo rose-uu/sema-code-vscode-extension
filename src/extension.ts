@@ -10,7 +10,7 @@ let sidebarProvider: SemaSidebarProvider;
 let currentWorkspacePath: string | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Sema VSCode Extension is now active!');
+    // console.log('Sema VSCode Extension is now active!');
 
     // 检查并设置默认工作区
     checkAndSetDefaultWorkspace();
@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         // 如果工作区路径发生变化，重新加载插件
         if (newWorkspacePath !== currentWorkspacePath) {
-            console.log(`工作区已变更: ${currentWorkspacePath} -> ${newWorkspacePath}`);
+           // console.log(`工作区已变更: ${currentWorkspacePath} -> ${newWorkspacePath}`);
             currentWorkspacePath = newWorkspacePath;
 
             // 重新初始化插件
@@ -82,7 +82,7 @@ function getCurrentWorkspacePath(): string | undefined {
  * 重新加载插件
  */
 function reloadExtension(context: vscode.ExtensionContext) {
-    console.log('重新加载 Sema VSCode Extension...');
+    // console.log('重新加载 Sema VSCode Extension...');
 
     // 销毁当前的 sidebarProvider
     if (sidebarProvider) {
@@ -119,7 +119,7 @@ function checkAndSetDefaultWorkspace() {
 
     // 如果没有打开任何工作区
     if (!workspaceFolders || workspaceFolders.length === 0) {
-        console.log('未检测到工作区，准备创建默认工作区...');
+       // console.log('未检测到工作区，准备创建默认工作区...');
 
         // 获取用户主目录
         const homeDir = os.homedir();
@@ -129,7 +129,7 @@ function checkAndSetDefaultWorkspace() {
         if (!fs.existsSync(semaDemo)) {
             try {
                 fs.mkdirSync(semaDemo, { recursive: true });
-                console.log(`已创建默认工作区目录: ${semaDemo}`);
+               // console.log(`已创建默认工作区目录: ${semaDemo}`);
 
                 // 创建一个简单的README文件
                 const readmeContent = `# Sema Demo 工作区
@@ -147,7 +147,7 @@ function checkAndSetDefaultWorkspace() {
 你可以在这里创建任何类型的项目文件，Sema 插件会自动适配当前工作区环境。
 `;
                 fs.writeFileSync(path.join(semaDemo, 'README.md'), readmeContent, 'utf8');
-                console.log('已创建 README.md 文件');
+               // console.log('已创建 README.md 文件');
 
             } catch (error) {
                 console.error('创建默认工作区失败:', error);
@@ -159,7 +159,7 @@ function checkAndSetDefaultWorkspace() {
         // 打开sema-demo目录作为工作区
         const uri = vscode.Uri.file(semaDemo);
         vscode.commands.executeCommand('vscode.openFolder', uri, false).then(() => {
-            console.log(`已打开默认工作区: ${semaDemo}`);
+           // console.log(`已打开默认工作区: ${semaDemo}`);
             vscode.window.setStatusBarMessage('✓ 已打开默认工作区 sema-demo', 3000);
         }, (error) => {
             console.error('打开默认工作区失败:', error);
@@ -169,5 +169,5 @@ function checkAndSetDefaultWorkspace() {
 }
 
 export function deactivate() {
-    console.log('Sema VSCode Extension is now deactivated!');
+    // console.log('Sema VSCode Extension is now deactivated!');
 }

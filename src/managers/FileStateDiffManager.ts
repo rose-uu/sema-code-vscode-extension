@@ -166,7 +166,7 @@ export class FileStateDiffManager {
             }
         });
 
-        console.log(`新建快照: ${this.workingDir}，包含 ${this.fileSnapshots.size} 个文件`);
+       // console.log(`新建快照: ${this.workingDir}，包含 ${this.fileSnapshots.size} 个文件`);
     }
 
 
@@ -294,7 +294,7 @@ export class FileStateDiffManager {
         const defaultMinLine = isIpynbFile ? 0 : 1;
         const finalMinLine = minLine ?? defaultMinLine;
 
-        console.log(`showFileDiff: ${filePath}, minLine: ${finalMinLine}`);
+       // console.log(`showFileDiff: ${filePath}, minLine: ${finalMinLine}`);
 
         // 处理 Jupyter Notebook 文件
         if (isIpynbFile) {
@@ -615,12 +615,12 @@ export class FileStateDiffManager {
 
             // 如果内容相同，没有变化
             if (originalContent === currentContent) {
-                console.log(`统计[${fullPath}] additions: 0, removals: 0, minLine: ${defaultMinLine} (内容未变化)`);
+               // console.log(`统计[${fullPath}] additions: 0, removals: 0, minLine: ${defaultMinLine} (内容未变化)`);
                 return { additions: 0, removals: 0, minLine: defaultMinLine };
             }
 
             const stats = this.calculateDiffStats(originalContent, currentContent, defaultMinLine);
-            console.log(`统计[${fullPath}] additions: ${stats.additions}, removals: ${stats.removals}, minLine: ${stats.minLine}`);
+           // console.log(`统计[${fullPath}] additions: ${stats.additions}, removals: ${stats.removals}, minLine: ${stats.minLine}`);
 
             return stats;
         } catch (error) {
@@ -646,7 +646,7 @@ export class FileStateDiffManager {
             try {
                 const currentContent = await fs.promises.readFile(fullPath, 'utf8');
                 const lineCount = currentContent.split('\n').length;
-                console.log(`统计[${fullPath}] additions: ${lineCount}, removals: 0, minLine: ${defaultMinLine} (新文件)`);
+               // console.log(`统计[${fullPath}] additions: ${lineCount}, removals: 0, minLine: ${defaultMinLine} (新文件)`);
                 return { originalContent: '', currentContent };
             } catch (error) {
                 console.error(`读取新文件失败: ${fullPath}`, error);
@@ -662,7 +662,7 @@ export class FileStateDiffManager {
             // 文件已删除情况
             console.error(`读取当前文件失败: ${fullPath}`, error);
             const lineCount = originalContent.split('\n').length;
-            console.log(`统计[${fullPath}] additions: 0, removals: ${lineCount}, minLine: ${defaultMinLine} (文件已删除)`);
+           // console.log(`统计[${fullPath}] additions: 0, removals: ${lineCount}, minLine: ${defaultMinLine} (文件已删除)`);
             return { originalContent, currentContent: '' };
         }
     }

@@ -250,7 +250,7 @@ export class FileOperationManager {
         }
 
         try {
-            console.log(`[searchWorkspaceFiles] query: ${query}`);
+           // console.log(`[searchWorkspaceFiles] query: ${query}`);
 
             // 1. 获取所有打开的文件并过滤
             const cleanQuery = query.replace(/\/+$/, '').toLowerCase();

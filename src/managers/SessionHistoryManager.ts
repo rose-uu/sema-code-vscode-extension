@@ -76,7 +76,7 @@ export class SessionHistoryManager {
      */
     public async saveSession(messageHistory?: any[]): Promise<void> {
         const sessionId = this.semaWrapper.currentSessionId;
-        console.log(`保存会话到历史记录: ${sessionId}`)
+       // console.log(`保存会话到历史记录: ${sessionId}`)
         let messages = messageHistory || this.semaWrapper.messageHistory || [];
 
         // 如果内容为空，不保存
@@ -239,7 +239,7 @@ export class SessionHistoryManager {
      * 删除会话
      */
     public async deleteSession(sessionId: string): Promise<void> {
-        console.log(`删除会话: ${sessionId}`)
+       // console.log(`删除会话: ${sessionId}`)
         const allProjects = await this.getAllProjectsRaw();
         const projectIndex = allProjects.findIndex(p => p.projectPath === this.projectPath);
         if (projectIndex === -1) {
@@ -259,7 +259,7 @@ export class SessionHistoryManager {
      * 清空当前项目的所有会话历史
      */
     public async clearAllSessions(): Promise<void> {
-        console.log(`清空会话: ${this.projectPath}`)
+       // console.log(`清空会话: ${this.projectPath}`)
         const allProjects = await this.getAllProjectsRaw();
         const filtered = allProjects.filter(p => p.projectPath !== this.projectPath);
         await this.context.globalState.update(SessionHistoryManager.STORAGE_KEY, filtered);

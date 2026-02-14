@@ -99,7 +99,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
 
             switch (message.type) {
                 case 'updateContent':
-                    console.log('updateContent:', message)
+                   // console.log('updateContent:', message)
                     setMessages(message.messages || []);
                     break;
                 case 'showProgress':
@@ -223,13 +223,13 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     break;
                 case 'customCommandsLoaded':
                     // 自定义命令加载完成
-                    console.log('[Frontend] Received custom commands:', message.commands);
+                   // console.log('[Frontend] Received custom commands:', message.commands);
                     // 在前端更新命令映射
                     if (message.commands && Array.isArray(message.commands)) {
                         updateCustomCommands(message.commands);
                         // 清空前端命令缓存
                         clearCommandCache();
-                        console.log('[Frontend] Updated custom commands map');
+                       // console.log('[Frontend] Updated custom commands map');
                         // 触发版本更新以重新渲染快捷面板
                         setCustomCommandsVersion(prev => prev + 1);
                     }
@@ -407,7 +407,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     };
 
     const handleBashPermission = (action: string) => {
-        console.log(`bashPermission触发: ${action}`);
+       // console.log(`bashPermission触发: ${action}`);
 
         // 如果用户拒绝，将权限请求插入到消息历史中
         if (action !== 'agree' && action !== 'allow') {
@@ -467,7 +467,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     };
 
     const handleAskQuestionSubmit = (answers: Record<string, string>) => {
-        console.log('Ask question submit:', answers);
+       // console.log('Ask question submit:', answers);
 
         // 隐藏问答对话框
         setAskQuestionData(null);
@@ -483,7 +483,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     };
 
     const handlePlanExitSubmit = (selected: 'startEditing' | 'clearContextAndStart') => {
-        console.log('Plan exit submit:', selected);
+       // console.log('Plan exit submit:', selected);
 
         // 隐藏退出Plan模式对话框
         setPlanExitData(null);

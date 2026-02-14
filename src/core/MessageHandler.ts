@@ -46,7 +46,7 @@ export class MessageHandler {
         switch (message.type) {
             case 'frontendReady':
                 // 前端准备就绪，现在可以初始化会话
-                console.log('Frontend ready, initializing session...');
+               // console.log('Frontend ready, initializing session...');
                 await this.callbacks.initializeSession();
                 // 在前端准备就绪后检查配置
                 await this.callbacks.checkConfiguration();

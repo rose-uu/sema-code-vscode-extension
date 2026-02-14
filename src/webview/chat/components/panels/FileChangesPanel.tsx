@@ -50,7 +50,7 @@ const FileChangesPanel: React.FC<FileChangesPanelProps> = ({ changes, vscode, on
         const filePaths = uniqueChanges.map(change => change.fullPath);
 
         // 调用后端方法恢复文件
-        console.log('FileChangesPanel handleDiscardAll called with file paths:', filePaths);
+       // console.log('FileChangesPanel handleDiscardAll called with file paths:', filePaths);
         vscode.postMessage({
             type: 'restoreFromSnapshots',
             filePaths: filePaths

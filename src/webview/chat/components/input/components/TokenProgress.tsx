@@ -14,7 +14,7 @@ interface TokenProgressProps {
 }
 
 const TokenProgress: React.FC<TokenProgressProps> = React.memo(({ tokenInfo }) => {
-    console.log('tokenInfo: ', tokenInfo)
+    // console.log('tokenInfo: ', tokenInfo)
     // 计算使用百分比
     const percentage = tokenInfo.maxTokens > 0
         ? Math.min((tokenInfo.useTokens / tokenInfo.maxTokens) * 100, 100)
