@@ -96,6 +96,7 @@ code, pre, .code {
     font-size: 12px;
     line-height: 1.6;
     width: 100%;
+    overflow-anchor: none;
 }
 
 #output-container::-webkit-scrollbar {

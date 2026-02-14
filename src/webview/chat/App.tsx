@@ -50,6 +50,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
 
     const outputContainerRef = useRef<HTMLDivElement>(null);
     const inputBoxRef = useRef<InputBoxHandle>(null);
+    const userScrolledUpRef = useRef<boolean>(false);
 
     const handleFileChange = useCallback(async (change: FileChange) => {
         // console.log('app触发handleFileChange')
@@ -327,13 +328,31 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     };
 
     const scrollToBottom = () => {
-        if (isUserAtBottom() && outputContainerRef.current) {
+        if (!userScrolledUpRef.current && outputContainerRef.current) {
             outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
         }
     };
 
+    useEffect(() => {
+        const container = outputContainerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            if (isUserAtBottom()) {
+                userScrolledUpRef.current = false;
+            } else {
+                userScrolledUpRef.current = true;
+            }
+        };
+
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, []);
+
     const handleSend = (text: string, files: SelectedFile[]) => {
         setProcessingState('processing');
+        // 重置滚动状态，让新消息自动滚到底部
+        userScrolledUpRef.current = false;
         // 设置处理开始时间
         setProcessingStartTime(Date.now());
         // 重置累计处理时间，让新的处理从 0 开始计时
@@ -483,7 +502,8 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     const renderToolMessage = useCallback((
         message: Message,
         key: string,
-        shouldReportChange: boolean
+        shouldReportChange: boolean,
+        forceClose?: boolean
     ) => {
 
         // 根据工具类型选择组件
@@ -525,6 +545,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                         key={key}
                         content={message.content}
                         vscode={vscode}
+                        forceClose={forceClose}
                     />
                 );
 
@@ -590,7 +611,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     );
 
                 case 'tool':
-                    return renderToolMessage(message, key, shouldReportChange);
+                    return renderToolMessage(message, key, shouldReportChange, !!toolPermissionData);
 
                 case 'permission_request':
                     return (
@@ -638,7 +659,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     return null;
             }
         });
-    }, [messages, modelName, availableModels]);
+    }, [messages, modelName, availableModels, toolPermissionData]);
 
     return (
         <>

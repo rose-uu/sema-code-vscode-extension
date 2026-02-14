@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useEffect, useCallback, useMemo, useRef, useState } from 'react';
 import { Message, VscodeApi } from '../../types';
 import EditBlock from '../../blocks/tools/EditBlock';
 import ReadBlock from '../../blocks/tools/ReadBlock';
@@ -27,6 +27,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     onClose
 }) => {
     const contentRef = useRef<HTMLDivElement>(null);
+    const [userScrolled, setUserScrolled] = useState(false);
+    const prevMessagesLengthRef = useRef(taskMessages.length);
 
     // 点击背景关闭弹窗
     const handleBackdropClick = useCallback((e: React.MouseEvent) => {
@@ -57,12 +59,47 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         }
     }, [taskMessages]);
 
-    // 滚动到底部
+    // 监听滚动事件，检测用户是否手动滚动
     useEffect(() => {
-        if (contentRef.current) {
-            contentRef.current.scrollTop = contentRef.current.scrollHeight;
+        const contentElement = contentRef.current;
+        if (!contentElement) return;
+
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = contentElement;
+            // 如果用户滚动到了底部，可以重置 userScrolled 状态
+            if (scrollHeight - scrollTop - clientHeight < 10) {
+                setUserScrolled(false);
+            } else {
+                // 用户手动滚动到了非底部位置
+                setUserScrolled(true);
+            }
+        };
+
+        contentElement.addEventListener('scroll', handleScroll);
+        return () => contentElement.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // 滚动到底部（仅在用户没有手动滚动且确实有新消息时）
+    useEffect(() => {
+        const contentElement = contentRef.current;
+        if (!contentElement) return;
+
+        // 检查是否有新消息添加
+        const hasNewMessages = taskMessages.length > prevMessagesLengthRef.current;
+        
+        // 只有在用户没有手动滚动，并且确实有新消息时才自动滚动
+        if (!userScrolled && hasNewMessages) {
+            // 使用 setTimeout 确保在 DOM 更新后滚动
+            setTimeout(() => {
+                if (contentElement) {
+                    contentElement.scrollTop = contentElement.scrollHeight;
+                }
+            }, 0);
         }
-    }, [taskMessages]);
+
+        // 更新上一次的消息长度
+        prevMessagesLengthRef.current = taskMessages.length;
+    }, [taskMessages, userScrolled]);
 
     // 获取状态显示文本
     const getStatusText = () => {
