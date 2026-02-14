@@ -92,7 +92,6 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
                 askQuestionResponse: (response) => this.handleAskQuestionResponse(response),
                 planExitResponse: (response) => this.handlePlanExitResponse(response),
                 initializeSession: async () => await this.coreManager.createSession(),
-                getSemaCoreVersion: async () => await this.getSemaCoreVersion(),
                 checkConfiguration: async () => await this.checkConfiguration(),
                 insertPermissionRequest: (permissionData) => this.coreManager.insertPermissionRequestMessage(permissionData),
                 updateAgentMode: async (mode) => await this.updateAgentMode(mode)
@@ -672,18 +671,6 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
             }
         } catch (error) {
             console.error('Error saving session after topic update:', error);
-        }
-    }
-
-    /**
-     * 获取 SemaCore 版本号
-     */
-    private async getSemaCoreVersion(): Promise<string> {
-        try {
-            return await this.coreManager.getSemaCoreVersion();
-        } catch (error) {
-            console.error('Error getting SemaCore version:', error);
-            return '';
         }
     }
 

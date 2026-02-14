@@ -461,6 +461,23 @@ code, pre, .code {
     font-style: italic;
 }
 
+.welcome-version-badge {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-bottom: 10px;
+}
+
+.welcome-intro-text {
+    color: var(--vscode-foreground);
+}
+
+.welcome-version-badge img {
+    height: 18px;
+    display: block;
+}
+
 /* 滚动条样式 */
 .welcome-message::-webkit-scrollbar {
     width: 6px;

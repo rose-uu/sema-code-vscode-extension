@@ -40,7 +40,6 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     const [askQuestionData, setAskQuestionData] = useState<any>(null);
     const [planExitData, setPlanExitData] = useState<any>(null);
     const [modelConfigReminder, setModelConfigReminder] = useState<string>('');
-    const [semaCoreVersion, setSemaCoreVersion] = useState<string>('');
     const [projectInputHistory, setProjectInputHistory] = useState<string[]>([]);
     const [processingStartTime, setProcessingStartTime] = useState<number>(0);
     const [accumulatedProcessingTime, setAccumulatedProcessingTime] = useState<number>(0);
@@ -204,10 +203,6 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     // 显示模型配置提醒
                     setModelConfigReminder(message.message || '');
                     break;
-                case 'semaCoreVersion':
-                    // 接收 sema-core 版本号
-                    setSemaCoreVersion(message.version || '');
-                    break;
                 case 'initializeInputHistory':
                     // 初始化输入历史数据
                     if (message.projectInputHistory && Array.isArray(message.projectInputHistory)) {
@@ -251,11 +246,6 @@ const App: React.FC<AppProps> = ({ vscode }) => {
         // 请求模型信息
         vscode.postMessage({
             type: 'requestModelInfo'
-        });
-
-        // 请求 sema-core 版本号
-        vscode.postMessage({
-            type: 'requestSemaCoreVersion'
         });
 
         return () => {
@@ -549,7 +539,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
         if (!messages || messages.length === 0) {
             // 只有在有模型配置信息时才显示Welcome组件
             if (modelName && availableModels.length > 0) {
-                return <Welcome version={semaCoreVersion} />;
+                return <Welcome />;
             }
             // 没有模型配置信息时返回null，不显示Welcome组件
             return null;
@@ -648,7 +638,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     return null;
             }
         });
-    }, [messages, semaCoreVersion, modelName, availableModels]);
+    }, [messages, modelName, availableModels]);
 
     return (
         <>

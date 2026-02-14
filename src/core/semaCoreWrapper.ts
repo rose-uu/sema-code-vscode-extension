@@ -1096,23 +1096,6 @@ export class SemaCoreWrapper {
     }
 
     /**
-     * 获取 SemaCore 版本信息
-     */
-    public async getSemaCoreVersion(): Promise<string> {
-        // 尝试从 node_modules 中读取 sema-core 的 package.json
-        const packageJsonPath = path.resolve(__dirname, '../node_modules/sema-core/package.json');
-
-        if (fs.existsSync(packageJsonPath)) {
-            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-            console.log(`package.json: ${packageJson.version}`)
-            return packageJson.version || '';
-        }
-
-        console.warn('Could not find sema-core package.json');
-        return '';
-    }
-
-    /**
      * 更新系统配置并应用到 SemaCore
      */
     public async updateSystemConfig(config: UpdatableCoreConfig): Promise<void> {

@@ -22,7 +22,6 @@ export interface MessageHandlerCallbacks {
     askQuestionResponse: (response: any) => void;
     planExitResponse: (response: any) => void;
     initializeSession: () => Promise<void>;
-    getSemaCoreVersion: () => Promise<string>;
     checkConfiguration: () => Promise<void>;
     insertPermissionRequest: (permissionData: any) => void;
     updateAgentMode: (mode: 'Agent' | 'Plan') => Promise<void>;
@@ -100,9 +99,6 @@ export class MessageHandler {
             case 'planExitResponse':
                 this.callbacks.planExitResponse(message.response);
                 break;
-            case 'requestSemaCoreVersion':
-                await this.handleRequestSemaCoreVersion();
-                break;
             case 'verifyFilePath':
                 await this.handleVerifyFilePath(message.filePath, message.tempId, message.originalCode, message.lineInfo);
                 break;
@@ -177,25 +173,6 @@ export class MessageHandler {
             this.chatWebviewProvider.postMessage({
                 type: 'contentSearchResult',
                 result: null
-            });
-        }
-    }
-
-    /**
-     * 处理获取 Sema Core 版本号
-     */
-    private async handleRequestSemaCoreVersion(): Promise<void> {
-        try {
-            const version = await this.callbacks.getSemaCoreVersion();
-            this.chatWebviewProvider.postMessage({
-                type: 'semaCoreVersion',
-                version: version
-            });
-        } catch (error) {
-            console.error('Failed to get sema-core version:', error);
-            this.chatWebviewProvider.postMessage({
-                type: 'semaCoreVersion',
-                version: ''
             });
         }
     }

@@ -41,10 +41,11 @@ export class ChatWebviewProvider {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; 
-        style-src ${webview.cspSource} 'unsafe-inline' https://cdnjs.cloudflare.com; 
-        script-src 'nonce-${nonce}' https://cdnjs.cloudflare.com; 
-        font-src ${webview.cspSource};">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none';
+        style-src ${webview.cspSource} 'unsafe-inline' https://cdnjs.cloudflare.com;
+        script-src 'nonce-${nonce}' https://cdnjs.cloudflare.com;
+        font-src ${webview.cspSource};
+        img-src ${webview.cspSource} https://img.shields.io data:;">
     <title>Code Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
 </head>
