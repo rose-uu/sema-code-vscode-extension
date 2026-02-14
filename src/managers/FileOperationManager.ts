@@ -21,12 +21,19 @@ export class FileOperationManager {
     public async openFileAtLine(filePath: string, line: number = 1, endLine?: number): Promise<void> {
         try {
             const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-            if (!workspaceFolder) {
-                return;
-            }
 
-            // 构建完整路径
-            const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, filePath);
+            // 判断是否为绝对路径
+            const isAbsolute = filePath.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(filePath);
+
+            let fileUri: vscode.Uri;
+            if (isAbsolute) {
+                fileUri = vscode.Uri.file(filePath);
+            } else {
+                if (!workspaceFolder) {
+                    return;
+                }
+                fileUri = vscode.Uri.joinPath(workspaceFolder.uri, filePath);
+            }
 
             // 打开文档并跳转到指定行
             const document = await vscode.workspace.openTextDocument(fileUri);
@@ -335,12 +342,19 @@ export class FileOperationManager {
     public async verifyFilePath(filePath: string): Promise<boolean> {
         try {
             const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-            if (!workspaceFolder) {
-                return false;
-            }
 
-            // 构建完整路径
-            const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, filePath);
+            // 判断是否为绝对路径（Unix: 以 / 开头，Windows: 以盘符开头）
+            const isAbsolute = filePath.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(filePath);
+
+            let fileUri: vscode.Uri;
+            if (isAbsolute) {
+                fileUri = vscode.Uri.file(filePath);
+            } else {
+                if (!workspaceFolder) {
+                    return false;
+                }
+                fileUri = vscode.Uri.joinPath(workspaceFolder.uri, filePath);
+            }
 
             // 尝试获取文件状态
             await vscode.workspace.fs.stat(fileUri);
