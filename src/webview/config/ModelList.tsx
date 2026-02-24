@@ -9,7 +9,7 @@ interface ModelListProps {
 const ModelList: React.FC<ModelListProps> = ({ config, vscode }) => {
     // 解析模型名称以提取 provider 和 model 信息
     const parseModelName = (modelName: string) => {
-        // 模型名称格式例如: "AIMP_Claude-Sonnet-4-20250514-v1.0[custom-openai]"
+        // 模型名称格式例如: "Claude-Sonnet-4-20250514-v1.0[custom]"
         // 提取 provider 部分（方括号内的内容）
         const providerMatch = modelName.match(/\[([^\]]+)\]$/);
         const provider = providerMatch ? providerMatch[1] : 'unknown';

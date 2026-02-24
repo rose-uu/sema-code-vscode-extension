@@ -59,6 +59,7 @@ export class ConfigWebviewProvider {
                 'loadSkillsInfo': () => this.loadSkillsInfo(),
                 'loadAgentsInfo': () => this.loadAgentsInfo(),
                 'addAgent': () => this.addAgent(message.data),
+                'getModelAdapter': () => this.getModelAdapter(message.provider, message.modelName),
             };
 
             const handler = handlers[message.command as keyof typeof handlers];
@@ -157,6 +158,7 @@ export class ConfigWebviewProvider {
         modelName: string;
         maxTokens: number;
         contextLength: number;
+        adapt?: string;
     }) {
         try {
             await this.ensureCoreReady();
@@ -167,7 +169,8 @@ export class ConfigWebviewProvider {
                 baseURL: data.baseURL,
                 apiKey: data.apiKey,
                 maxTokens: data.maxTokens,
-                contextLength: data.contextLength
+                contextLength: data.contextLength,
+                ...(data.adapt && { adapt: data.adapt })
             };
 
             await this.coreManager.addModel(modelConfig);
@@ -789,6 +792,21 @@ export class ConfigWebviewProvider {
                 data: [],
                 message: error instanceof Error ? error.message : '加载 Agent 信息失败'
             });
+        }
+    }
+
+    /**
+     * 获取模型适配器类型
+     */
+    private getModelAdapter(provider: string, modelName: string) {
+        try {
+            const adapter = this.coreManager.getModelAdapter(provider, modelName);
+            this.postMessage({
+                command: 'modelAdapterResult',
+                adapter: adapter || null
+            });
+        } catch (error) {
+            // 静默失败，保持当前 adapter
         }
     }
 

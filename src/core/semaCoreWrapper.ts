@@ -1,6 +1,4 @@
 import { SemaCore } from 'sema-core';
-import * as path from 'path';
-import * as fs from 'fs';
 import {
     MessageCompleteData,
     StateUpdateData,
@@ -934,6 +932,13 @@ export class SemaCoreWrapper {
      */
     public addAgentConf(agentConf: AgentConfig): Promise<boolean> {
         return this.semaCore.addAgentConf(agentConf);
+    }
+
+    /**
+     * 获取模型适配器类型
+     */
+    public getModelAdapter(provider: string, modelName: string): string | undefined {
+        return this.semaCore.getModelAdapter(provider, modelName);
     }
 
     /**

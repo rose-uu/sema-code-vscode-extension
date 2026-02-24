@@ -109,14 +109,13 @@ const App: React.FC<AppProps> = ({ vscode }) => {
 
                         {/* 标签页内容 */}
                         <div className="tab-content">
-                            {modelTab === 'list' ? (
-                                <>
-                                    <ModelList config={config} vscode={vscode} />
-                                    <TaskConfig config={config} vscode={vscode} />
-                                </>
-                            ) : (
+                            <div style={{ display: modelTab === 'list' ? 'block' : 'none' }}>
+                                <ModelList config={config} vscode={vscode} />
+                                <TaskConfig config={config} vscode={vscode} />
+                            </div>
+                            <div style={{ display: modelTab === 'add' ? 'block' : 'none' }}>
                                 <AddModelForm onSuccess={() => setModelTab('list')} vscode={vscode} />
-                            )}
+                            </div>
                         </div>
                     </div>
                 )}

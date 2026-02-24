@@ -21,7 +21,7 @@ const TaskConfig: React.FC<TaskConfigProps> = ({ config, vscode }) => {
 
     // 解析模型名称以显示友好的名称
     const parseModelName = (modelName: string) => {
-        // 模型名称格式例如: "AIMP_Claude-Sonnet-4-20250514-v1.0[custom-openai]"
+        // 模型名称格式例如: "Claude-Sonnet-4-20250514-v1.0[custom]"
         const providerMatch = modelName.match(/\[([^\]]+)\]$/);
         const provider = providerMatch ? providerMatch[1] : 'unknown';
         const modelDisplayName = modelName.replace(/\[[^\]]+\]$/, '');

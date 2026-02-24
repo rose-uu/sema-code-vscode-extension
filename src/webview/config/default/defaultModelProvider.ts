@@ -1,3 +1,5 @@
+export type AdapterType = 'openai' | 'anthropic';
+
 export interface ProviderDefaults {
     name: string;
     baseURL: string;
@@ -16,13 +18,15 @@ export interface ProviderDefaults {
     maxTokensOptions?: number[];
     /** 可选的上下文窗口大小列表 */
     contextLengthOptions?: number[];
+    /** 默认 API 适配器类型 */
+    defaultAdapt?: AdapterType;
 }
 
 /** 全局默认的最大生成token数选项 */
 export const DEFAULT_MAX_TOKENS_OPTIONS = [4096, 8192, 16000, 32000, 64000];
 
 /** 全局默认的上下文窗口大小选项 */
-export const DEFAULT_CONTEXT_LENGTH_OPTIONS = [8192, 16000, 32000, 64000, 128000, 256000, 512000];
+export const DEFAULT_CONTEXT_LENGTH_OPTIONS = [32000, 64000, 128000, 256000, 512000];
 
 /** 全局默认最大生成token数 */
 export const DEFAULT_MAX_TOKENS = 8192;
@@ -49,7 +53,7 @@ export const PROVIDER_ORDER = [
     'glm',
     'openrouter',
     'qwen',
-    'custom-openai'
+    'custom'
 ];
 
 export const defaultModelProvider: Record<string, ProviderDefaults> = {
@@ -58,6 +62,7 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         baseURL: 'https://api.anthropic.com',
         baseURLPlaceholder: 'https://api.anthropic.com',
         apiKeyPlaceholder: '输入您的 Anthropic API Key',
+        defaultAdapt: 'anthropic',
     },
     'openai': {
         name: 'OpenAI',
@@ -65,6 +70,7 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         baseURLPlaceholder: 'https://api.openai.com/v1',
         apiKeyPlaceholder: '输入您的 OpenAI API Key',
         defaultModel: 'gpt-5.2',
+        defaultAdapt: 'openai',
     },
     'kimi': {
         name: 'Kimi (Moonshot)',
@@ -73,6 +79,7 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         apiKeyPlaceholder: '输入您的 Moonshot API Key',
         defaultModel: 'kimi-k2.5',
         apikeyUrl: 'https://platform.moonshot.cn/console/api-keys',
+        defaultAdapt: 'openai',
     },
     'minimax': {
         name: 'MiniMax',
@@ -81,6 +88,7 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         apiKeyPlaceholder: '输入您的 MiniMax API Key',
         defaultModel: 'MiniMax-M2.5',
         apikeyUrl: 'https://platform.minimaxi.com/user-center/basic-information/interface-key',
+        defaultAdapt: 'anthropic',
     },
     'deepseek': {
         name: 'DeepSeek',
@@ -90,6 +98,7 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         apiKeyPlaceholder: '输入您的 DeepSeek API Key',
         defaultModel: 'deepseek-reasoner',
         apikeyUrl: 'https://platform.deepseek.com/api_keys',
+        defaultAdapt: 'anthropic',
     },
     'glm': {
         name: 'GLM (智谱)',
@@ -98,6 +107,7 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         apiKeyPlaceholder: '输入您的智谱 API Key',
         defaultModel: 'glm-5',
         apikeyUrl: 'https://bigmodel.cn/usercenter/proj-mgmt/apikeys',
+        defaultAdapt: 'openai',
     },
     'openrouter': {
         name: 'OpenRouter',
@@ -107,6 +117,7 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         apiKeyPlaceholder: '输入您的 OpenRouter API Key',
         defaultModel: 'anthropic/claude-sonnet-4.5',
         apikeyUrl: 'https://openrouter.ai/settings/keys',
+        defaultAdapt: 'anthropic',
     },
     'qwen': {
         name: 'Qwen (Alibaba)',
@@ -114,11 +125,13 @@ export const defaultModelProvider: Record<string, ProviderDefaults> = {
         baseURLPlaceholder: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
         apiKeyPlaceholder: '输入您的阿里云 API Key',
         defaultModel: 'qwen3-max-preview',
+        defaultAdapt: 'openai',
     },
-    'custom-openai': {
-        name: '自定义OpenAI标准接口',
+    'custom': {
+        name: '自定义LLM接口',
         baseURL: '',
         baseURLPlaceholder: 'https://your-api.com/v1',
         apiKeyPlaceholder: '输入您的 API Key',
+        defaultAdapt: 'openai',
     },
 };

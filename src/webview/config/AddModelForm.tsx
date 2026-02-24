@@ -7,7 +7,8 @@ import {
     DEFAULT_MAX_TOKENS,
     DEFAULT_CONTEXT_LENGTH,
     DEFAULT_MAX_TOKENS_OPTIONS,
-    DEFAULT_CONTEXT_LENGTH_OPTIONS
+    DEFAULT_CONTEXT_LENGTH_OPTIONS,
+    AdapterType
 } from './default/defaultModelProvider';
 
 
@@ -27,6 +28,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
     const [provider, setProvider] = useState(DEFAULT_PROVIDER);
     const [baseURL, setBaseURL] = useState(defaultModelProvider[DEFAULT_PROVIDER].baseURL);
     const [apiKey, setApiKey] = useState('');
+    const [adapt, setAdapt] = useState<AdapterType>(defaultModelProvider[DEFAULT_PROVIDER].defaultAdapt ?? 'openai');
     const [modelName, setModelName] = useState('');
     const [maxTokens, setMaxTokens] = useState(String(DEFAULT_MAX_TOKENS));
     const [contextLength, setContextLength] = useState(String(DEFAULT_CONTEXT_LENGTH));
@@ -68,6 +70,12 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
                     });
                     break;
 
+                case 'modelAdapterResult':
+                    if (msg.adapter) {
+                        setAdapt(msg.adapter);
+                    }
+                    break;
+
                 case 'modelsResult':
                     setIsFetchingModels(false);
 
@@ -97,7 +105,9 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
                             // 智能选择默认模型
                             const preferredModelId = providerConfig.defaultModel;
                             const preferredModel = preferredModelId ? msg.models.find((m: Model) => m.id === preferredModelId) : null;
-                            setSelectedModel(preferredModel ? preferredModel.id : msg.models[0].id);
+                            const autoSelectedModel = preferredModel ? preferredModel.id : msg.models[0].id;
+                            setSelectedModel(autoSelectedModel);
+                            vscode.postMessage({ command: 'getModelAdapter', provider, modelName: autoSelectedModel });
 
                             setTestStatus({
                                 message: `✓ 成功获取 ${msg.models.length} 个模型`,
@@ -143,6 +153,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
         setIsManualInput(false);
         setMaxTokens(String(defaults.defaultMaxTokens ?? DEFAULT_MAX_TOKENS));
         setContextLength(String(defaults.defaultContextLength ?? DEFAULT_CONTEXT_LENGTH));
+        setAdapt(defaults.defaultAdapt ?? 'openai');
     };
 
     const handleFetchModels = () => {
@@ -192,7 +203,8 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
                 provider,
                 baseURL,
                 apiKey,
-                modelName: currentModelName
+                modelName: currentModelName,
+                adapt
             }
         });
     };
@@ -234,7 +246,8 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
                 apiKey,
                 modelName: currentModelName,
                 maxTokens: parseInt(maxTokens),
-                contextLength: parseInt(contextLength)
+                contextLength: parseInt(contextLength),
+                adapt
             }
         });
     };
@@ -341,6 +354,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
                                         setSelectedModel(e.target.value);
                                         setConnectionTested(false);
                                         setConnectionSuccess(false);
+                                        vscode.postMessage({ command: 'getModelAdapter', provider, modelName: e.target.value });
                                     }}
                                     style={{ flex: 1 }}
                                 >
@@ -387,6 +401,18 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
                             api_key申请详见: <a href={currentModelDocUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--vscode-textLink-foreground)', textDecoration: 'underline' }}>{currentModelDocUrl}</a>
                         </div>
                     )}
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="adapt">API 类型</label>
+                    <select
+                        id="adapt"
+                        value={adapt}
+                        onChange={(e) => setAdapt(e.target.value as AdapterType)}
+                    >
+                        <option value="openai">OpenAI 格式</option>
+                        <option value="anthropic">Anthropic 格式</option>
+                    </select>
                 </div>
 
                 <div className="form-row">
