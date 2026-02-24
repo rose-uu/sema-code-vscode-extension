@@ -1,6 +1,7 @@
 import React from 'react';
 import BaseBashContent from '../ui/BaseBashContent';
 import UpdateCodeDiff from '../ui/UpdateCodeDiff';
+import FileIcon from '../ui/FileIcon';
 import { langMap } from '../../utils/fileLangTypeMap';
 import { DiffContent } from '../../types';
 import {
@@ -16,12 +17,14 @@ interface PermissionContentProps {
     toolName: string;
     title: string;
     content: string | DiffContent;
+    vscode?: any;
 }
 
 const PermissionContent: React.FC<PermissionContentProps> = ({
     toolName,
     title,
-    content
+    content,
+    vscode
 }) => {
     // 计算增删行数
     const getDiffStats = () => {
@@ -62,6 +65,7 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
     // 渲染Notebook相关的内容
     const renderNotebookContent = () => {
         const fileName = title;
+        const displayFileName = fileName.split('/').pop() || fileName;
         const language = 'python';
 
         const diffContent = typeof content === 'string'
@@ -74,6 +78,7 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
                     <div className="file-permission-title-divider-top" />
                     <div className="file-permission-title">
                         <strong className="file-permission-action">Update Cell </strong>
+                        <FileIcon fileName={displayFileName} isDirectory={false} size={18} />
                         <span className="file-permission-filename">{fileName}</span>
                     </div>
                     <div className="file-permission-title-divider-bottom" />
@@ -138,6 +143,7 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
     // 渲染常规文件内容
     const renderRegularFileContent = () => {
         const fileName = title;
+        const displayFileName = fileName.split('/').pop() || fileName;
 
         // 检测语言类型
         let language = 'plaintext';
@@ -150,7 +156,17 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
 
         const diffContent = content as DiffContent;
         const isUpdate = toolName === 'Edit' || (diffContent && diffContent.type === 'diff');
-        const actionLabel = isUpdate ? 'Update File ' : 'Create File ';
+        const actionLabel = isUpdate ? 'Update File' : 'Create File';
+
+        const handleFileClick = () => {
+            if (vscode && fileName) {
+                vscode.postMessage({
+                    type: 'openFile',
+                    filePath: fileName,
+                    line: 1
+                });
+            }
+        };
 
         return (
             <div className="file-permission-container">
@@ -158,8 +174,14 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
                     <div className="file-permission-title-divider-top" />
                     <div className="file-permission-title">
                         <strong className="file-permission-action">{actionLabel}</strong>
-                        <span className="file-permission-filename">{fileName}</span>
-                        {renderDiffStats()}
+                        <div
+                            className={`file-permission-file-left${isUpdate && vscode ? ' file-permission-file-left-clickable' : ''}`}
+                            onClick={isUpdate && vscode ? handleFileClick : undefined}
+                        >
+                            <FileIcon fileName={displayFileName} isDirectory={false} size={18} />
+                            <span className="file-permission-filename">{fileName}</span>
+                            {renderDiffStats()}
+                        </div>
                     </div>
                     <div className="file-permission-title-divider-bottom" />
                 </div>

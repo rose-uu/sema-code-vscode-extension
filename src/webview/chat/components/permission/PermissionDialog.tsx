@@ -16,12 +16,14 @@ interface PermissionDialogProps {
     permissionData: ToolPermissionRequestData;
     onPermissionSelect: (action: 'agree' | 'allow' | 'refuse') => void;
     onCancel?: () => void;
+    vscode?: any;
 }
 
 const PermissionDialog: React.FC<PermissionDialogProps> = ({
     permissionData,
     onPermissionSelect,
-    onCancel
+    onCancel,
+    vscode
 }) => {
     const handleBashPermission = (action: 'agree' | 'allow' | 'refuse') => {
         onPermissionSelect(action);
@@ -64,6 +66,7 @@ const PermissionDialog: React.FC<PermissionDialogProps> = ({
                     toolName={permissionData.toolName}
                     title={permissionData.title}
                     content={permissionData.content}
+                    vscode={vscode}
                 />
                 <div className="bash-permission-info">
                     <div className="bash-permission-description">

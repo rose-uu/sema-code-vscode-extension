@@ -356,9 +356,9 @@ export class FileOperationManager {
                 fileUri = vscode.Uri.joinPath(workspaceFolder.uri, filePath);
             }
 
-            // 尝试获取文件状态
-            await vscode.workspace.fs.stat(fileUri);
-            return true;
+            // 尝试获取文件状态，且只有文件（非目录）才返回 true
+            const stat = await vscode.workspace.fs.stat(fileUri);
+            return stat.type === vscode.FileType.File;
         } catch {
             return false;
         }

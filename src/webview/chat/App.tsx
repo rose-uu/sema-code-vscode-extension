@@ -682,6 +682,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                         permissionData={toolPermissionData}
                         onPermissionSelect={handleBashPermission}
                         onCancel={handleStop}
+                        vscode={vscode}
                     />
                 )}
                 {askQuestionData && (

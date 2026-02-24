@@ -54,21 +54,22 @@
 }
 
 .bash-permission-diff-stats {
-    font-size: 11px;
-    margin-left: 8px;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    flex-shrink: 0;
 }
 
 .bash-permission-diff-stats .diff-added {
-    color: #4ec9b0;
-    font-weight: 500;
+    color: var(--diff-added-color, #4ec9b0);
 }
 
 .bash-permission-diff-stats .diff-removed {
-    color: #f47171;
+    color: var(--diff-removed-color, #f48771);
     font-weight: 500;
+    font-size: 12px;
 }
 
 .bash-permission-status {
@@ -157,10 +158,90 @@
     margin: 20px 10px 0px 20px;
 }
 
-
 .bash-permission-bash-description {
     margin: 0px 10px 20px 20px;
     color: #808080;
+}
+
+.bash-permission-status.refused,
+.bash-permission-status.interrupted {
+    color: #f47171;
+    background-color: rgba(244, 135, 113, 0.1);
+}
+
+.permission-content-dimmed {
+    opacity: 0.65;
+    filter: grayscale(0.2);
+}
+
+.file-permission-container {
+    margin: 8px 0px 8px 0px;
+}
+
+.file-permission-title-wrapper {
+    margin-bottom: 8px;
+}
+
+.file-permission-title-divider-top {
+    height: 1px;
+    background-color: var(--vscode-textLink-foreground, #4ec9b0);
+    margin-bottom: 8px;
+}
+
+.file-permission-title {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.file-permission-action {
+    color: var(--vscode-textLink-foreground, #4ec9b0);
+    font-weight: bold;
+}
+
+.file-permission-file-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--vscode-editor-foreground);
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.file-permission-file-left-clickable {
+    cursor: pointer;
+}
+
+.file-permission-file-left-clickable:hover {
+    opacity: 0.8;
+}
+
+.file-permission-filename {
+    color: var(--vscode-foreground);
+    font-weight: normal;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.file-permission-title-divider-bottom {
+    height: 1px;
+    border-top: 1px dashed #808080;
+    margin-bottom: 12px;
+}
+
+.file-permission-code-divider {
+    height: 1px;
+    border-top: 1px dashed #808080;
+    margin-top: 12px;
 }
 
 /* MCP工具内容区域样式 */
