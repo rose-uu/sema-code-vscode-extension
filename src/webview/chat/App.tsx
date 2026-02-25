@@ -41,8 +41,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     const [planExitData, setPlanExitData] = useState<any>(null);
     const [modelConfigReminder, setModelConfigReminder] = useState<string>('');
     const [projectInputHistory, setProjectInputHistory] = useState<string[]>([]);
-    const [processingStartTime, setProcessingStartTime] = useState<number>(0);
-    const [accumulatedProcessingTime, setAccumulatedProcessingTime] = useState<number>(0);
+    const [spinnerAccumulatedSeconds, setSpinnerAccumulatedSeconds] = useState<number>(0);
     const [agentMode, setAgentMode] = useState<'Agent' | 'Plan'>('Agent');
     // 用于触发命令列表重新渲染的版本号
     // 当自定义命令更新时，版本号递增，触发依赖它的组件重新渲染
@@ -51,6 +50,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     const outputContainerRef = useRef<HTMLDivElement>(null);
     const inputBoxRef = useRef<InputBoxHandle>(null);
     const userScrolledUpRef = useRef<boolean>(false);
+    const spinnerStartTimeRef = useRef<number>(0);
 
     const handleFileChange = useCallback(async (change: FileChange) => {
         // console.log('app触发handleFileChange')
@@ -254,14 +254,20 @@ const App: React.FC<AppProps> = ({ vscode }) => {
         };
     }, []);
 
-    // 监听处理状态变化，当从 processing 变为 idle 时累计时间
+    // 只有 spinner 真正可见时才累计计时，隐藏时暂停
+    const isSpinnerVisible = processingState === 'processing' && !progressMessage && !toolPermissionData && !askQuestionData && !planExitData;
+
     useEffect(() => {
-        if (processingState === 'idle' && processingStartTime > 0) {
-            const sessionTime = Math.floor((Date.now() - processingStartTime) / 1000);
-            setAccumulatedProcessingTime(prev => prev + sessionTime);
-            setProcessingStartTime(0);
+        if (isSpinnerVisible) {
+            spinnerStartTimeRef.current = Date.now();
+        } else {
+            if (spinnerStartTimeRef.current > 0) {
+                const elapsed = Math.floor((Date.now() - spinnerStartTimeRef.current) / 1000);
+                setSpinnerAccumulatedSeconds(prev => prev + elapsed);
+                spinnerStartTimeRef.current = 0;
+            }
         }
-    }, [processingState, processingStartTime]);
+    }, [isSpinnerVisible]);
 
     useEffect(() => {
         scrollToBottom();
@@ -353,10 +359,9 @@ const App: React.FC<AppProps> = ({ vscode }) => {
         setProcessingState('processing');
         // 重置滚动状态，让新消息自动滚到底部
         userScrolledUpRef.current = false;
-        // 设置处理开始时间
-        setProcessingStartTime(Date.now());
-        // 重置累计处理时间，让新的处理从 0 开始计时
-        setAccumulatedProcessingTime(0);
+        // 重置 spinner 计时
+        setSpinnerAccumulatedSeconds(0);
+        spinnerStartTimeRef.current = 0;
         // 清空文件变更列表和 todos 列表
         setFileChanges([]);
         setTodos([]);
@@ -369,11 +374,6 @@ const App: React.FC<AppProps> = ({ vscode }) => {
 
     const handleStop = () => {
         setProcessingState('idle');
-        // 累计处理时间
-        if (processingStartTime > 0) {
-            const sessionTime = Math.floor((Date.now() - processingStartTime) / 1000);
-            setAccumulatedProcessingTime(prev => prev + sessionTime);
-        }
         // 如果当前显示权限面板，将权限请求插入到消息历史中，然后隐藏它
         if (toolPermissionData) {
             vscode.postMessage({
@@ -670,9 +670,9 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                         {progressMessage}
                     </div>
                 )}
-                {processingState === 'processing' && !progressMessage && !toolPermissionData && !askQuestionData && !planExitData && (
+                {isSpinnerVisible && (
                     <ProcessingSpinner
-                        accumulatedSeconds={accumulatedProcessingTime}
+                        accumulatedSeconds={spinnerAccumulatedSeconds}
                         in_progress={todos.find(t => t.status === 'in_progress')?.activeForm || ''}
                         next_progress={todos.find(t => t.status === 'pending')?.content || ''}
                     />
