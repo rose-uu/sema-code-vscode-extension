@@ -143,7 +143,7 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
 
             const modelData = await this.coreManager.getModelData();
             if (!modelData.modelList || modelData.modelList.length === 0) {
-                console.info('[提示] 请先点击右上角的配置按钮进行模型设置～\n');
+                // console.info('[提示] 请先点击右上角的配置按钮进行模型设置～\n');
 
                 // 向前端发送模型配置提醒消息
                 this.chatWebviewProvider.postMessage({

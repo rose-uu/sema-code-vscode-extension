@@ -160,10 +160,11 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
 
         const handleFileClick = () => {
             if (vscode && fileName) {
+                const firstLine = diffContent?.patch?.[0]?.newStart ?? 1;
                 vscode.postMessage({
                     type: 'openFile',
                     filePath: fileName,
-                    line: 1
+                    line: firstLine
                 });
             }
         };

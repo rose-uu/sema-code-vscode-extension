@@ -604,7 +604,7 @@ export class FileStateDiffManager {
      * 获取文件变更统计信息
      */
     public async getFileChangeStats(filePath: string): Promise<FileChangeStats> {
-        console.info(`getFileChangeStats: ${filePath}`);
+        // console.info(`getFileChangeStats: ${filePath}`);
 
         const isIpynbFile = filePath.toLowerCase().endsWith('.ipynb');
         const defaultMinLine = isIpynbFile ? 0 : 1;
@@ -642,7 +642,7 @@ export class FileStateDiffManager {
 
         if (!originalContent) {
             // 新文件情况
-            console.info(`新文件，没有快照: ${fullPath}`);
+            // console.info(`新文件，没有快照: ${fullPath}`);
             try {
                 const currentContent = await fs.promises.readFile(fullPath, 'utf8');
                 const lineCount = currentContent.split('\n').length;
