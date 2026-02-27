@@ -33,7 +33,6 @@ import {
     ApiTestParams,
     ApiTestResult,
     ModelUpdateData,
-    FileReferenceInfo,
     UpdatableCoreConfig,
     MCPServerConfig,
     MCPScopeType,
@@ -131,7 +130,7 @@ export class SemaCoreWrapper {
 
         const config: SemaCoreConfig = {
             workingDir,
-            logLevel: 'none',
+            logLevel: 'error',
             ...systemConfig,
             useTools: useTools
         };
@@ -282,18 +281,18 @@ export class SemaCoreWrapper {
         });
 
         this.semaCore.on<SessionErrorData>('session:error', (data) => {
-            // console.error('Session error:', data);
+            console.error('Session error:', data);
             const errorMessage = data.error?.message || 'Unknown error';
-            // this.messageHistory.push({
-            //     type: 'system',
-            //     content: {
-            //         type: 'session_error',
-            //         content: `Error: [${data.type}]${errorMessage}`,
-            //         errorType: data.type
-            //     },
-            //     timestamp: Date.now()
-            // });
-            // this.sendContentUpdate();
+            this.messageHistory.push({
+                type: 'system',
+                content: {
+                    type: 'session_error',
+                    content: `Error: [${data.type}]${errorMessage}`,
+                    errorType: data.type
+                },
+                timestamp: Date.now()
+            });
+            this.sendContentUpdate();
         });
 
         // 监听状态更新事件

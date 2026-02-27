@@ -635,14 +635,11 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                             />
                         );
                     }
-                    else if (['compact', 'clear'].includes(message.content.type)) {
+                    else if (['compact', 'clear', 'session_error'].includes(message.content.type)) {
                         return <SupplementaryInfo key={key} items={[message.content.content]} />
                     }
                     else if (message.content.type === 'file_reference') {
                         return <SupplementaryInfo key={key} items={message.content.content || []} />
-                    }
-                    else if (message.content.type === 'session_error') {
-                        return <SupplementaryInfo key={key} items={[message.content.content]} />
                     }
                     else if (message.content.type === 'plan_implement') {
                         return (

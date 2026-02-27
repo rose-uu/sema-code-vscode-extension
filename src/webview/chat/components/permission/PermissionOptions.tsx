@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 interface PermissionOptionsProps {
     options: {
         agree: string;
-        allow: string;
+        allow?: string;
         refuse: string;
     };
     onSelect: (action: 'agree' | 'allow' | 'refuse', customInput?: string) => void;
@@ -28,8 +28,18 @@ const PermissionOptions: React.FC<PermissionOptionsProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // 计算总选项数（3个按钮 + 可能的输入框）
-    const totalOptions = showCustomInput ? 4 : 3;
+    // 动态构建按钮列表
+    type ButtonAction = 'agree' | 'allow' | 'refuse';
+    const buttonList: { key: ButtonAction; label: string }[] = [
+        { key: 'agree', label: options.agree },
+        ...(options.allow ? [{ key: 'allow' as ButtonAction, label: options.allow }] : []),
+        { key: 'refuse', label: options.refuse },
+    ];
+    const refuseIndex = buttonList.findIndex(b => b.key === 'refuse');
+
+    // 计算总选项数（按钮数 + 可能的输入框）
+    const totalOptions = showCustomInput ? buttonList.length + 1 : buttonList.length;
+    const customInputIndex = buttonList.length; // 输入框的虚拟index
 
     // 格式化文本，提取反引号中的内容并加粗
     const formatAllowText = (text: string, showPrefix: boolean) => {
@@ -59,7 +69,7 @@ const PermissionOptions: React.FC<PermissionOptionsProps> = ({
                 if (event.key === 'Escape' && !isComposing) {
                     event.preventDefault();
                     setIsInputFocused(false);
-                    setSelectedIndex(2);
+                    setSelectedIndex(refuseIndex);
                     containerRef.current?.focus();
                     return;
                 }
@@ -70,7 +80,7 @@ const PermissionOptions: React.FC<PermissionOptionsProps> = ({
                 } else if (event.key === 'ArrowUp') {
                     event.preventDefault();
                     setIsInputFocused(false);
-                    setSelectedIndex(2);
+                    setSelectedIndex(refuseIndex);
                     containerRef.current?.focus();
                 }
                 return;
@@ -90,9 +100,9 @@ const PermissionOptions: React.FC<PermissionOptionsProps> = ({
                     break;
                 case 'ArrowDown':
                     event.preventDefault();
-                    if (showCustomInput && selectedIndex === 2) {
+                    if (showCustomInput && selectedIndex === refuseIndex) {
                         // 从 refuse 按钮移动到输入框
-                        setSelectedIndex(3);
+                        setSelectedIndex(customInputIndex);
                         setIsInputFocused(true);
                         setTimeout(() => inputRef.current?.focus(), 0);
                     } else if (selectedIndex === totalOptions - 1) {
@@ -104,7 +114,7 @@ const PermissionOptions: React.FC<PermissionOptionsProps> = ({
                     break;
                 case 'Enter':
                     event.preventDefault();
-                    if (selectedIndex === 3 && showCustomInput) {
+                    if (selectedIndex === customInputIndex && showCustomInput) {
                         // 选中输入框时，聚焦输入框
                         setIsInputFocused(true);
                         setTimeout(() => inputRef.current?.focus(), 0);
@@ -134,8 +144,9 @@ const PermissionOptions: React.FC<PermissionOptionsProps> = ({
     }, [autoFocus]);
 
     const handleSelect = () => {
-        const actions: ('agree' | 'allow' | 'refuse')[] = ['agree', 'allow', 'refuse'];
-        onSelect(actions[selectedIndex]);
+        if (selectedIndex < buttonList.length) {
+            onSelect(buttonList[selectedIndex].key);
+        }
     };
 
     const handleClick = (index: number, action: 'agree' | 'allow' | 'refuse') => {
@@ -151,7 +162,7 @@ const PermissionOptions: React.FC<PermissionOptionsProps> = ({
     };
 
     const handleInputFocus = () => {
-        setSelectedIndex(3);
+        setSelectedIndex(customInputIndex);
         setIsInputFocused(true);
     };
 
@@ -166,24 +177,18 @@ const PermissionOptions: React.FC<PermissionOptionsProps> = ({
             tabIndex={0}
             style={{ outline: 'none' }}
         >
-            <button
-                className={`bash-permission-btn ${selectedIndex === 0 ? 'selected' : ''}`}
-                onClick={() => handleClick(0, 'agree')}
-            >
-                {selectedIndex === 0 && '❯ '}{options.agree}
-            </button>
-            <button
-                className={`bash-permission-btn ${selectedIndex === 1 ? 'selected' : ''}`}
-                onClick={() => handleClick(1, 'allow')}
-            >
-                {formatAllowText(options.allow, selectedIndex === 1)}
-            </button>
-            <button
-                className={`bash-permission-btn  ${selectedIndex === 2 ? 'selected' : ''}`}
-                onClick={() => handleClick(2, 'refuse')}
-            >
-                {selectedIndex === 2 && '❯ '}{options.refuse}
-            </button>
+            {buttonList.map((btn, index) => (
+                <button
+                    key={btn.key}
+                    className={`bash-permission-btn ${selectedIndex === index ? 'selected' : ''}`}
+                    onClick={() => handleClick(index, btn.key)}
+                >
+                    {btn.key === 'allow'
+                        ? formatAllowText(btn.label, selectedIndex === index)
+                        : <>{selectedIndex === index && '❯ '}{btn.label}</>
+                    }
+                </button>
+            ))}
             {showCustomInput && (
                 <div className="permission-custom-input-wrapper">
                     <input

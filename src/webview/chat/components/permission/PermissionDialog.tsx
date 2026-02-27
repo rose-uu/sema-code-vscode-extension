@@ -7,7 +7,7 @@ import { isNotebookType, isMcpToolType, isSkillType, getPermissionTitle } from '
 interface ToolPermissionRequestData extends ToolContent {
     options: {
         agree: string;
-        allow: string;
+        allow?: string;
         refuse: string;
     };
 }
