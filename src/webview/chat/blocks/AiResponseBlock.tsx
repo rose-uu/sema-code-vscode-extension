@@ -117,7 +117,7 @@ const AiResponseBlock: React.FC<AiResponseBlockProps> = ({
     return (
         <div className="ai-resp-block">
             <div className="output-line ai-response-content" ref={contentRef}>
-                <span className="response-indicator">⏺</span>
+                <span className="response-indicator">{navigator.platform.toLowerCase().includes('win') ? '●' : '⏺'}</span>
                 {needsMarkdown ? (
                     <div
                         className="markdown-content"
