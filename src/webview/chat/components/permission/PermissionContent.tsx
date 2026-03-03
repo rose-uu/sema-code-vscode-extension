@@ -64,13 +64,26 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
 
     // 渲染Notebook相关的内容
     const renderNotebookContent = () => {
-        const fileName = title;
-        const displayFileName = fileName.split('/').pop() || fileName;
+        // 解析 title，格式如 "example.ipynb cell:4" 或 "/path/to/example.ipynb cell:4"
+        const cellMatch = title.match(/^(.*?)\s+cell:(\d+)$/);
+        const filePath = cellMatch ? cellMatch[1] : title;
+        const cellNumber = cellMatch ? cellMatch[2] : null;
+        const displayFileName = filePath.split('/').pop() || filePath;
         const language = 'python';
 
         const diffContent = typeof content === 'string'
             ? stringToDiffContent(content)
             : content as DiffContent;
+
+        const handleFileClick = () => {
+            if (vscode && filePath) {
+                vscode.postMessage({
+                    type: 'showFileDiff',
+                    filePath: filePath,
+                    minLine: cellNumber ? parseInt(cellNumber) : 0
+                });
+            }
+        };
 
         return (
             <div className="file-permission-container">
@@ -78,8 +91,14 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
                     <div className="file-permission-title-divider-top" />
                     <div className="file-permission-title">
                         <strong className="file-permission-action">Update Cell </strong>
-                        <FileIcon fileName={displayFileName} isDirectory={false} size={18} />
-                        <span className="file-permission-filename">{fileName}</span>
+                        <div
+                            className={`file-permission-file-left${vscode ? ' file-permission-file-left-clickable' : ''}`}
+                            onClick={vscode ? handleFileClick : undefined}
+                        >
+                            <FileIcon fileName={displayFileName} isDirectory={false} size={18} />
+                            <span className="file-permission-filename">{displayFileName}</span>
+                            {cellNumber && <span className="file-permission-cell-label">cell:{cellNumber}</span>}
+                        </div>
                     </div>
                     <div className="file-permission-title-divider-bottom" />
                 </div>

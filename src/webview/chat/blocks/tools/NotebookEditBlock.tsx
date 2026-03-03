@@ -1,48 +1,41 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { VscodeApi, FileChange } from '../../types';
-import { IconButton, ToggleIcon, CopyIcon } from '../../components/ui/IconButton';
+import { VscodeApi, FileChange, DiffContent } from '../../types';
+import { ToggleIcon } from '../../components/ui/IconButton';
 import FileIcon from '../../components/ui/FileIcon';
 import { ToolContent } from '../../types';
 import UpdateCodeDiff from '../../components/ui/UpdateCodeDiff';
-import { langMap } from '../../utils/fileLangTypeMap';
-
-interface DiffHunk {
-    oldStart: number;
-    oldLines: number;
-    newStart: number;
-    newLines: number;
-    lines: string[];
-}
-
-interface DiffContent {
-    type: string;
-    patch: DiffHunk[];
-    diffText: string;
-}
 
 interface NotebookEditBlockProps {
     content: ToolContent;
     vscode: VscodeApi;
     onFileChange?: (change: FileChange) => void;
+    language?: string;
 }
 
 const NotebookEditBlock: React.FC<NotebookEditBlockProps> = React.memo(({
     content: toolContent,
     vscode,
-    onFileChange
+    onFileChange,
+    language = 'python'
 }) => {
     const { title, summary, content } = toolContent;
 
     const [isExpanded, setIsExpanded] = useState(true);
 
     const parsedContent = useMemo(() => {
-        const fileName = title || '';
+        // 解析 title，格式可能是 "example.ipynb cell:4" 或纯文件名 "example.ipynb"
+        const titleCellMatch = (title || '').match(/^(.*?)\s+cell:(\d+)$/);
+        const fileName = titleCellMatch ? titleCellMatch[1] : (title || '');
 
-        // 从 summary 中提取 cell 信息
+        // 从 title 中提取 cell 信息，title 中没有则从 summary 中提取
         let cellNum = 0;
-        const cellMatch = summary.match(/cell[:\s]+(\d+)/);
-        if (cellMatch) {
-            cellNum = parseInt(cellMatch[1]);
+        if (titleCellMatch) {
+            cellNum = parseInt(titleCellMatch[2]);
+        } else {
+            const summaryCellMatch = (summary || '').match(/cell[:\s]+(\d+)/);
+            if (summaryCellMatch) {
+                cellNum = parseInt(summaryCellMatch[1]);
+            }
         }
 
         // 解析 diff 内容
@@ -52,15 +45,21 @@ const NotebookEditBlock: React.FC<NotebookEditBlockProps> = React.memo(({
         if (typeof content === 'object' && content !== null && ((content as any).type === 'diff' || (content as any).type === 'new')) {
             diffContent = content as DiffContent;
             isNewFile = (content as any).type === 'new';
-        }
-
-        // 检测语言类型
-        let language = 'plaintext';
-        if (fileName) {
-            const ext = fileName.split('.').pop()?.toLowerCase();
-            if (ext && langMap[ext]) {
-                language = langMap[ext];
-            }
+        } else if (typeof content === 'string' && content.trim()) {
+            // content 是字符串时（cell 原始内容），转换为 new 类型的 diff 格式
+            const contentLines = content.split('\n');
+            diffContent = {
+                type: 'new',
+                patch: [{
+                    oldStart: 0,
+                    oldLines: 0,
+                    newStart: 1,
+                    newLines: contentLines.length,
+                    lines: contentLines.map(line => '+' + line)
+                }],
+                diffText: ''
+            };
+            isNewFile = true;
         }
 
         return {
@@ -68,11 +67,10 @@ const NotebookEditBlock: React.FC<NotebookEditBlockProps> = React.memo(({
             cellNum,
             diffContent,
             isNewFile,
-            language
         };
     }, [title, summary, content]);
 
-    const { fileName, cellNum, diffContent, isNewFile, language } = parsedContent;
+    const { fileName, cellNum, diffContent, isNewFile } = parsedContent;
 
     const displayFileName = fileName;
 
@@ -114,7 +112,8 @@ const NotebookEditBlock: React.FC<NotebookEditBlockProps> = React.memo(({
         setIsExpanded(!isExpanded);
     }, [isExpanded]);
 
-    const handleShowDiff = useCallback(async () => {
+    const handleShowDiff = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
         if (fileName) {
             vscode.postMessage({
                 type: 'showFileDiff',
@@ -124,15 +123,18 @@ const NotebookEditBlock: React.FC<NotebookEditBlockProps> = React.memo(({
         }
     }, [fileName, cellNum, vscode]);
 
+    const handleHeaderClick = useCallback(() => {
+        handleToggle();
+    }, [handleToggle]);
+
     if (!fileName || !diffContent) {
         return null;
     }
 
     return (
         <div className="edit-block">
-            <div className="edit-block-header">
-                <div className="edit-block-title" onClick={handleShowDiff}>
-                    <span className="edit-type">Notebook</span>
+            <div className="edit-block-header" onClick={handleHeaderClick}>
+                <div className="edit-title-left" onClick={handleShowDiff}>
                     <FileIcon
                         fileName={displayFileName}
                         isDirectory={false}
@@ -145,21 +147,17 @@ const NotebookEditBlock: React.FC<NotebookEditBlockProps> = React.memo(({
                         )}
                     </span>
                 </div>
-                <div className="edit-block-actions">
-                    <IconButton onClick={handleCopy} title="复制代码">
-                        <CopyIcon />
-                    </IconButton>
-                    <IconButton onClick={handleToggle} title={isExpanded ? "折叠" : "展开"}>
-                        <ToggleIcon isExpanded={isExpanded} />
-                    </IconButton>
+                <div className="edit-toggle-btn">
+                    <ToggleIcon isExpanded={isExpanded} />
+                </div>
+                <div className="edit-spacer"></div>
+                <div className="edit-copy-btn" onClick={(e) => { e.stopPropagation(); handleCopy(); }}>
+                    复制
                 </div>
             </div>
             {isExpanded && (
                 <div className={`edit-block-content ${isNewFile ? 'new-file' : ''}`}>
-                    <UpdateCodeDiff
-                        diffContent={diffContent}
-                        language={language}
-                    />
+                    <UpdateCodeDiff diffContent={diffContent} language={language} />
                 </div>
             )}
         </div>

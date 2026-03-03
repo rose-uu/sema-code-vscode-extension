@@ -87,6 +87,6 @@ export interface DiffContent {
 export interface ToolContent {
     toolName: string;
     title: string;
-    summary: string;
+    summary?: string;
     content: string | DiffContent;  // 支持字符串（旧格式）或 DiffContent 对象（新格式）
 }

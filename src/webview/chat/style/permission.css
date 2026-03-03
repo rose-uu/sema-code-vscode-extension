@@ -232,6 +232,13 @@
     min-width: 0;
 }
 
+.file-permission-cell-label {
+    color: var(--vscode-descriptionForeground);
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
 .file-permission-title-divider-bottom {
     height: 1px;
     border-top: 1px dashed #808080;
