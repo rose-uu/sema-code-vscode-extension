@@ -266,6 +266,17 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ onSuccess, vscode }) => {
         (model.name && model.name.toLowerCase().includes(modelFilter.toLowerCase()))
     );
 
+    useEffect(() => {
+        if (isManualInput || filteredModels.length === 0) return;
+        if (!filteredModels.find(m => m.id === selectedModel)) {
+            const newModel = filteredModels[0].id;
+            setSelectedModel(newModel);
+            setConnectionTested(false);
+            setConnectionSuccess(false);
+            vscode.postMessage({ command: 'getModelAdapter', provider, modelName: newModel });
+        }
+    }, [modelFilter]);
+
     const defaults = defaultModelProvider[provider];
 
     return (
