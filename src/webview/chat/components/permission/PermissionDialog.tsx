@@ -38,11 +38,15 @@ const PermissionDialog: React.FC<PermissionDialogProps> = ({
         } else if (isMcpToolType(permissionData.toolName)) {
             return 'Do you want to proceed?';
         } else if (isNotebookType(permissionData.toolName)) {
-            const cellMatch = permissionData.title.match(/cell:(\d+)/);
-            if (cellMatch) {
+            // 解析操作类型: "Update Cell - ..." / "Create Cell - ..." / "Delete Cell - ..."
+            if (permissionData.title.startsWith('Delete Cell')) {
+                return 'Do you want to delete this notebook cell?';
+            } else if (permissionData.title.startsWith('Create Cell')) {
+                return 'Do you want to create this notebook cell?';
+            } else {
+                // Update Cell 或旧格式
                 return 'Do you want to update this notebook cell?';
             }
-            return 'Do you want to create this notebook?';
         } else if (permissionData.toolName === 'Edit') {
             return 'Do you want to update this file?';
         } else {

@@ -64,9 +64,25 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
 
     // 渲染Notebook相关的内容
     const renderNotebookContent = () => {
-        // 解析 title，格式如 "example.ipynb cell:4" 或 "/path/to/example.ipynb cell:4"
-        const cellMatch = title.match(/^(.*?)\s+cell:(\d+)$/);
-        const filePath = cellMatch ? cellMatch[1] : title;
+        // 解析 title，格式如:
+        // "Update Cell - example.ipynb cell:4"
+        // "Create Cell - example.ipynb"
+        // "Delete Cell - example.ipynb cell:4"
+        // 或旧格式: "example.ipynb cell:4" (默认为 Update Cell)
+
+        let actionLabel = 'Update Cell';
+        let filePart = title;
+
+        // 尝试提取操作类型 (Update Cell / Create Cell / Delete Cell)
+        const actionMatch = title.match(/^(Update Cell|Create Cell|Delete Cell)\s*-\s*(.+)$/);
+        if (actionMatch) {
+            actionLabel = actionMatch[1];
+            filePart = actionMatch[2];
+        }
+
+        // 解析文件路径和 cell 编号
+        const cellMatch = filePart.match(/^(.*?)\s+cell:(\d+)$/);
+        const filePath = cellMatch ? cellMatch[1] : filePart;
         const cellNumber = cellMatch ? cellMatch[2] : null;
         const displayFileName = filePath.split('/').pop() || filePath;
         const language = 'python';
@@ -90,7 +106,7 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
                 <div className="file-permission-title-wrapper">
                     <div className="file-permission-title-divider-top" />
                     <div className="file-permission-title">
-                        <strong className="file-permission-action">Update Cell </strong>
+                        <strong className="file-permission-action">{actionLabel} </strong>
                         <div
                             className={`file-permission-file-left${vscode ? ' file-permission-file-left-clickable' : ''}`}
                             onClick={vscode ? handleFileClick : undefined}
