@@ -11,10 +11,9 @@ webpack.config.js
 .prettierrc*
 
 # 开发依赖和构建文件
-# 排除所有 node_modules，但保留运行时必需的二进制依赖
+# 排除所有 node_modules，但保留运行时必需的二进制（bin 目录）
 node_modules/**
-!node_modules/@vscode/ripgrep/**
-!node_modules/@vscode/ripgrep/**
+!node_modules/@vscode/ripgrep/bin/
 .vscode/**
 .git/**
 .gitignore
@@ -38,6 +37,7 @@ npm-debug.log*
 .nyc_output
 coverage/
 download-ripgrep.sh
+package-all.sh
 
 # 只保留必需的文件：
 # - package.json (插件配置)
