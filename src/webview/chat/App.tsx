@@ -357,6 +357,13 @@ const App: React.FC<AppProps> = ({ vscode }) => {
 
     const handleSend = (text: string, files: SelectedFile[]) => {
         setProcessingState('processing');
+        // 乐观更新：立即添加用户消息，不等后端响应，避免 Linux 上延迟导致 Welcome 和 UserInputBlock 无法立刻显示
+        setMessages(prev => [...prev, {
+            id: `optimistic-${Date.now()}`,
+            type: 'user',
+            content: text,
+            timestamp: Date.now()
+        }]);
         // 重置滚动状态，让新消息自动滚到底部
         userScrolledUpRef.current = false;
         // 重置 spinner 计时
@@ -558,11 +565,12 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     // 使用 useMemo 缓存渲染内容，避免不必要的重新计算
     const renderedContent = useMemo(() => {
         if (!messages || messages.length === 0) {
-            // 只有在有模型配置信息时才显示Welcome组件
-            if (modelName && availableModels.length > 0) {
+            // 只有在有模型配置信息且当前不在处理状态时才显示Welcome组件
+            // 处理中时隐藏Welcome，避免Linux上后端响应延迟导致Welcome和Spinner同时显示
+            if (modelName && availableModels.length > 0 && processingState !== 'processing') {
                 return <Welcome />;
             }
-            // 没有模型配置信息时返回null，不显示Welcome组件
+            // 没有模型配置信息或正在处理时返回null，不显示Welcome组件
             return null;
         }
 
@@ -656,7 +664,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     return null;
             }
         });
-    }, [messages, modelName, availableModels, toolPermissionData]);
+    }, [messages, modelName, availableModels, toolPermissionData, processingState]);
 
     return (
         <>
