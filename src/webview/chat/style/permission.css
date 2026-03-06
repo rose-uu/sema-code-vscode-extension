@@ -8,6 +8,11 @@
     max-width: calc(100% - 10px); /* 减去左右margin的空间 */
     box-sizing: border-box;
     outline: none;
+    background-color: var(--vscode-sideBar-background);
+}
+
+body.vscode-light .bash-permission-block {
+    background-color: #ffffff;
 }
 
 .bash-permission-block:focus,
@@ -89,6 +94,10 @@
     box-sizing: border-box;
 }
 
+body.vscode-light .bash-permission-content {
+    background-color: #ffffff;
+}
+
 .bash-permission-info {
     margin-bottom: 8px;
 }
@@ -112,7 +121,7 @@
 }
 
 .bash-permission-btn {
-    background-color: var(--vscode-button-secondaryBackground, #5a5a5a);
+    background-color: var(--vscode-button-secondaryBackground, rgba(128, 128, 128, 0.25));
     color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
     border: none;
     border-radius: 3px;
@@ -128,7 +137,7 @@
 }
 
 .bash-permission-btn:hover {
-    background-color: var(--vscode-button-secondaryHoverBackground, #666666);
+    background-color: var(--vscode-button-secondaryHoverBackground, rgba(128, 128, 128, 0.35));
 }
 
 .bash-permission-btn:active {
@@ -142,7 +151,8 @@
 }
 
 .bash-permission-btn.selected {
-    background-color: var(--vscode-button-hoverBackground);
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
 }
 
 .bash-permission-btn:focus {

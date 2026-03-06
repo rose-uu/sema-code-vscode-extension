@@ -307,7 +307,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-color: #1e1e1e;
+    background-color: var(--vscode-editor-background);
     font-family: var(--vscode-editor-font-family, 'Menlo', 'Monaco', 'Courier New', monospace);
     font-size: 12px;
     line-height: 16px;
@@ -357,17 +357,17 @@
 
 /* 行样式 */
 .diff-row-separator {
-    background-color: #2b2b2b;
+    background-color: var(--vscode-editorGutter-background, var(--vscode-editor-background));
 }
 
 .diff-row-separator td:nth-child(1) {
-    background-color: #2b2b2b;
-    border-right: 1px solid #1e1e1e;
+    background-color: var(--vscode-editorGutter-background, var(--vscode-editor-background));
+    border-right: 1px solid var(--vscode-editorGroup-border, transparent);
 }
 
 .diff-row-separator td:nth-child(2) {
-    background-color: #2b2b2b;
-    border-right: 1px solid #333;
+    background-color: var(--vscode-editorGutter-background, var(--vscode-editor-background));
+    border-right: 1px solid var(--vscode-panel-border, transparent);
 }
 
 .diff-row-separator td:nth-child(3) {
@@ -383,15 +383,15 @@
         45deg,
         transparent,
         transparent 5px,
-        #333 5px,
-        #333 10px
+        var(--vscode-editorLineNumber-foreground, #858585) 5px,
+        var(--vscode-editorLineNumber-foreground, #858585) 10px
     );
     opacity: 0.2;
 }
 
 .diff-row-meta {
-    background-color: #1e1e1e;
-    color: #858585;
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-descriptionForeground, #858585);
 }
 
 .diff-row-meta td {
@@ -399,11 +399,11 @@
     font-style: italic;
     font-size: 10px;
     opacity: 0.7;
-    border-top: 1px solid #333;
+    border-top: 1px solid var(--vscode-panel-border, #333);
 }
 
 .diff-row-added {
-    background-color: rgba(46, 160, 67, 0.15);
+    background-color: var(--vscode-diffEditor-insertedLineBackground, rgba(46, 160, 67, 0.15));
 }
 
 .diff-row-added .diff-line-number,
@@ -413,7 +413,7 @@
 }
 
 .diff-row-removed {
-    background-color: rgba(248, 81, 73, 0.15);
+    background-color: var(--vscode-diffEditor-removedLineBackground, rgba(248, 81, 73, 0.15));
 }
 
 /* 单元格样式 */
@@ -443,7 +443,7 @@
     white-space: pre-wrap;
     word-break: break-all;
     padding-left: 8px;
-    color: #d4d4d4;
+    color: var(--vscode-editor-foreground);
     vertical-align: top;
 }
 
@@ -456,9 +456,9 @@
 }
 
 .diff-highlight-removed {
-    background-color: #70201a;
+    background-color: var(--vscode-diffEditor-removedTextBackground, rgba(255, 0, 0, 0.3));
 }
 
 .diff-highlight-added {
-    background-color: #265e30;
+    background-color: var(--vscode-diffEditor-insertedTextBackground, rgba(0, 200, 80, 0.3));
 }

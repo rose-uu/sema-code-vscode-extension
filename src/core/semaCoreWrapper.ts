@@ -557,8 +557,7 @@ export class SemaCoreWrapper {
                 finalContent = `Compacted: ${data.errMsg}`;
             } else {
                 // 正常情况：显示压缩信息
-                const compactRatePercent = (data.compactRate * 100).toFixed(1);
-                finalContent = `Compacted: 会话压缩 ${compactRatePercent}% (${formatTokens(data.tokenBefore)} -> ${formatTokens(data.tokenCompact)})`;
+                finalContent = `Compacted: done`;
             }
 
             this.messageHistory.push({
