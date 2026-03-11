@@ -7,8 +7,9 @@ import SystemConfig from './SystemConfig';
 import MCPConfig from './MCPConfig';
 import SkillConfig from './SkillConfig';
 import AgentConfig from './AgentConfig';
+import PluginConfig from './PluginConfig';
 
-type PageType = 'models' | 'system' | 'mcp' | 'skill' | 'agent';
+type PageType = 'models' | 'system' | 'mcp' | 'skill' | 'agent' | 'plugin';
 type ModelTabType = 'list' | 'add';
 
 interface AppProps {
@@ -84,6 +85,13 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                 >
                     SubAgents
                 </div>
+
+                <div
+                    className={`nav-item nav-main ${currentPage === 'plugin' ? 'active' : ''}`}
+                    onClick={() => setCurrentPage('plugin')}
+                >
+                    Plugins
+                </div>
             </div>
 
             {/* 主内容区域 */}
@@ -145,6 +153,13 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                 {currentPage === 'skill' && (
                     <div className="page active">
                         <SkillConfig vscode={vscode} />
+                    </div>
+                )}
+
+                {/* Plugin页面 */}
+                {currentPage === 'plugin' && (
+                    <div className="page active">
+                        <PluginConfig vscode={vscode} />
                     </div>
                 )}
             </div>

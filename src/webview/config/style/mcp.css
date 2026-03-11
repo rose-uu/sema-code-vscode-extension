@@ -8,10 +8,13 @@
 /* MCP 服务项 */
 .mcp-server-item {
     overflow: hidden;
+    padding: 0;
 }
 
 .mcp-server-header.agent-header {
     margin-bottom: 0;
+    padding: 10px 14px;
+    gap: 8px;
 }
 
 /* MCP 名称图标 - 圆形背景 + 首字母 */
@@ -427,7 +430,7 @@
 .mcp-btn {
     padding: 8px 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;

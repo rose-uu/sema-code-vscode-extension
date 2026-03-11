@@ -41,7 +41,9 @@ import {
     SkillInfo,
     AgentInfo,
     AgentConfig,
-    MAIN_AGENT_ID
+    MAIN_AGENT_ID,
+    MarketplacePluginsInfo,
+    PluginScope
 } from 'sema-core/types';
 
 /**
@@ -1160,6 +1162,85 @@ export class SemaCoreWrapper {
         // 主代理权限请求，添加到主消息历史
         this.messageHistory.push(message);
         this.sendContentUpdate();
+    }
+
+    // ===== 插件市场管理相关方法 =====
+
+    /**
+     * 从 Git 仓库添加插件市场
+     */
+    public async addMarketplaceFromGit(repo: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.addMarketplaceFromGit(repo);
+    }
+
+    /**
+     * 从本地目录添加插件市场
+     */
+    public async addMarketplaceFromDirectory(dirPath: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.addMarketplaceFromDirectory(dirPath);
+    }
+
+    /**
+     * 更新插件市场
+     */
+    public async updateMarketplace(marketplaceName: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.updateMarketplace(marketplaceName);
+    }
+
+    /**
+     * 移除插件市场
+     */
+    public async removeMarketplace(marketplaceName: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.removeMarketplace(marketplaceName);
+    }
+
+    /**
+     * 安装插件
+     */
+    public async installPlugin(pluginName: string, marketplaceName: string, scope: PluginScope, projectPath?: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.installPlugin(pluginName, marketplaceName, scope, projectPath);
+    }
+
+    /**
+     * 卸载插件
+     */
+    public async uninstallPlugin(pluginName: string, marketplaceName: string, scope: PluginScope, projectPath?: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.uninstallPlugin(pluginName, marketplaceName, scope, projectPath);
+    }
+
+    /**
+     * 启用插件
+     */
+    public async enablePlugin(pluginName: string, marketplaceName: string, scope: PluginScope, projectPath?: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.enablePlugin(pluginName, marketplaceName, scope, projectPath);
+    }
+
+    /**
+     * 禁用插件
+     */
+    public async disablePlugin(pluginName: string, marketplaceName: string, scope: PluginScope, projectPath?: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.disablePlugin(pluginName, marketplaceName, scope, projectPath);
+    }
+
+    /**
+     * 更新插件
+     */
+    public async updatePlugin(pluginName: string, marketplaceName: string, scope: PluginScope, projectPath?: string): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.updatePlugin(pluginName, marketplaceName, scope, projectPath);
+    }
+
+    /**
+     * 刷新插件市场信息
+     */
+    public async refreshMarketplacePluginsInfo(): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.refreshMarketplacePluginsInfo();
+    }
+
+    /**
+     * 获取插件市场信息
+     */
+    public async getMarketplacePluginsInfo(): Promise<MarketplacePluginsInfo> {
+        return await this.semaCore.getMarketplacePluginsInfo();
     }
 
     /**

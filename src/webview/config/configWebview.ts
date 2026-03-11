@@ -60,6 +60,16 @@ export class ConfigWebviewProvider {
                 'loadAgentsInfo': () => this.loadAgentsInfo(),
                 'addAgent': () => this.addAgent(message.data),
                 'getModelAdapter': () => this.getModelAdapter(message.provider, message.modelName),
+                'loadPluginConfig': () => this.loadPluginConfig(),
+                'refreshPluginConfig': () => this.refreshPluginConfig(),
+                'installPlugin': () => this.installPlugin(message.pluginName, message.marketplaceName, message.scope, message.key),
+                'uninstallPlugin': () => this.uninstallPlugin(message.pluginName, message.marketplaceName, message.scope, message.key),
+                'enablePlugin': () => this.enablePlugin(message.pluginName, message.marketplaceName, message.scope),
+                'disablePlugin': () => this.disablePlugin(message.pluginName, message.marketplaceName, message.scope),
+                'updateMarketplace': () => this.updateMarketplace(message.marketplaceName),
+                'removeMarketplace': () => this.removeMarketplace(message.marketplaceName),
+                'addMarketplaceFromGit': () => this.addMarketplace('github', message.repo),
+                'addMarketplaceFromDirectory': () => this.addMarketplace('directory', message.dirPath),
             };
 
             const handler = handlers[message.command as keyof typeof handlers];
@@ -807,6 +817,268 @@ export class ConfigWebviewProvider {
             });
         } catch (error) {
             // 静默失败，保持当前 adapter
+        }
+    }
+
+    /**
+     * 加载插件市场信息
+     */
+    private async loadPluginConfig() {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = await this.coreManager.getMarketplacePluginsInfo();
+
+            this.postMessage({
+                command: 'loadPluginConfigResult',
+                success: true,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error loading plugin config:', error);
+            this.postMessage({
+                command: 'loadPluginConfigResult',
+                success: false,
+                data: { marketplaces: [], plugins: [] },
+                message: error instanceof Error ? error.message : '加载插件信息失败'
+            });
+        }
+    }
+
+    /**
+     * 刷新插件市场信息
+     */
+    private async refreshPluginConfig() {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = await this.coreManager.refreshMarketplacePluginsInfo();
+
+            this.postMessage({
+                command: 'refreshPluginConfigResult',
+                success: true,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error refreshing plugin config:', error);
+            this.postMessage({
+                command: 'refreshPluginConfigResult',
+                success: false,
+                message: error instanceof Error ? error.message : '刷新插件信息失败'
+            });
+            vscode.window.showErrorMessage(`刷新插件信息失败：${error instanceof Error ? error.message : '未知错误'}`);
+        }
+    }
+
+    /**
+     * 安装插件
+     */
+    private async installPlugin(pluginName: string, marketplaceName: string, scope: string, key: string) {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = await this.coreManager.installPlugin(pluginName, marketplaceName, scope);
+
+            this.postMessage({
+                command: 'installPluginResult',
+                success: true,
+                key,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error installing plugin:', error);
+            this.postMessage({
+                command: 'installPluginResult',
+                success: false,
+                key,
+                message: error instanceof Error ? error.message : '安装插件失败'
+            });
+            vscode.window.showErrorMessage(`安装插件失败：${error instanceof Error ? error.message : '未知错误'}`);
+        }
+    }
+
+    /**
+     * 卸载插件
+     */
+    private async uninstallPlugin(pluginName: string, marketplaceName: string, scope: string, key: string) {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = await this.coreManager.uninstallPlugin(pluginName, marketplaceName, scope);
+
+            this.postMessage({
+                command: 'uninstallPluginResult',
+                success: true,
+                key,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error uninstalling plugin:', error);
+            this.postMessage({
+                command: 'uninstallPluginResult',
+                success: false,
+                key,
+                message: error instanceof Error ? error.message : '卸载插件失败'
+            });
+            vscode.window.showErrorMessage(`卸载插件失败：${error instanceof Error ? error.message : '未知错误'}`);
+        }
+    }
+
+    /**
+     * 启用插件
+     */
+    private async enablePlugin(pluginName: string, marketplaceName: string, scope: string) {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = await this.coreManager.enablePlugin(pluginName, marketplaceName, scope);
+
+            this.postMessage({
+                command: 'enablePluginResult',
+                success: true,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error enabling plugin:', error);
+            this.postMessage({
+                command: 'enablePluginResult',
+                success: false,
+                message: error instanceof Error ? error.message : '启用插件失败'
+            });
+            vscode.window.showErrorMessage(`启用插件失败：${error instanceof Error ? error.message : '未知错误'}`);
+        }
+    }
+
+    /**
+     * 禁用插件
+     */
+    private async disablePlugin(pluginName: string, marketplaceName: string, scope: string) {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = await this.coreManager.disablePlugin(pluginName, marketplaceName, scope);
+
+            this.postMessage({
+                command: 'disablePluginResult',
+                success: true,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error disabling plugin:', error);
+            this.postMessage({
+                command: 'disablePluginResult',
+                success: false,
+                message: error instanceof Error ? error.message : '禁用插件失败'
+            });
+            vscode.window.showErrorMessage(`禁用插件失败：${error instanceof Error ? error.message : '未知错误'}`);
+        }
+    }
+
+    /**
+     * 更新插件市场
+     */
+    private async updateMarketplace(marketplaceName: string) {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = await this.coreManager.updateMarketplace(marketplaceName);
+
+            this.postMessage({
+                command: 'updateMarketplaceResult',
+                success: true,
+                name: marketplaceName,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error updating marketplace:', error);
+            this.postMessage({
+                command: 'updateMarketplaceResult',
+                success: false,
+                name: marketplaceName,
+                message: error instanceof Error ? error.message : '更新市场失败'
+            });
+            vscode.window.showErrorMessage(`更新插件市场失败：${error instanceof Error ? error.message : '未知错误'}`);
+        }
+    }
+
+    /**
+     * 移除插件市场
+     */
+    private async removeMarketplace(marketplaceName: string) {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = await this.coreManager.removeMarketplace(marketplaceName);
+
+            this.postMessage({
+                command: 'removeMarketplaceResult',
+                success: true,
+                name: marketplaceName,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error removing marketplace:', error);
+            this.postMessage({
+                command: 'removeMarketplaceResult',
+                success: false,
+                name: marketplaceName,
+                message: error instanceof Error ? error.message : '移除市场失败'
+            });
+            vscode.window.showErrorMessage(`移除插件市场失败：${error instanceof Error ? error.message : '未知错误'}`);
+        }
+    }
+
+    /**
+     * 添加插件市场（GitHub 或本地目录）
+     */
+    private async addMarketplace(type: 'github' | 'directory', value: string) {
+        if (!this.panel) return;
+
+        try {
+            await this.ensureCoreReady();
+
+            const data = type === 'github'
+                ? await this.coreManager.addMarketplaceFromGit(value)
+                : await this.coreManager.addMarketplaceFromDirectory(value);
+
+            this.postMessage({
+                command: 'addMarketplaceResult',
+                success: true,
+                data
+            });
+
+        } catch (error) {
+            console.error('Error adding marketplace:', error);
+            this.postMessage({
+                command: 'addMarketplaceResult',
+                success: false,
+                message: error instanceof Error ? error.message : '添加市场失败'
+            });
+            vscode.window.showErrorMessage(`添加插件市场失败：${error instanceof Error ? error.message : '未知错误'}`);
         }
     }
 

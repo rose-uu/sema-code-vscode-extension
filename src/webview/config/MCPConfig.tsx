@@ -3,8 +3,8 @@ import { VscodeApi, MCPData, MCPServerInfo, MCPScopeType, MCPServerConfig, ToolI
 import { defaultMCPMarketInfos, MCPMarketInfo } from './default/defaultMCPMarket';
 import { inlineSvgIcons } from './mcpIcon';
 import { initialBgColors, hashString, getColorByName } from './utils/iconUtils';
-import './style/mcp.css';
 import './style/agent.css';
+import './style/mcp.css';
 
 type MCPTabType = 'installed' | 'market';
 
@@ -204,7 +204,7 @@ const MCPGroup: React.FC<{
     }, [servers]);
 
     return (
-        <div className="agent-section mcp-group">
+        <>
             <div className="section-group-title">
                 {title}
                 <span className="section-group-count">
@@ -230,9 +230,9 @@ const MCPGroup: React.FC<{
                     ))}
                 </div>
             ) : (
-                <div className="mcp-empty">暂无 MCP 服务</div>
+                <div className="section-empty">暂无 MCP 服务</div>
             )}
-        </div>
+        </>
     );
 };
 
@@ -246,7 +246,7 @@ const SystemToolsGroup: React.FC<{
     const enabledCount = tools.filter(t => t.enabled).length;
 
     return (
-        <div className="agent-section mcp-group">
+        <>
             <div className="section-group-title">
                 系统工具
             </div>
@@ -341,7 +341,7 @@ const SystemToolsGroup: React.FC<{
                     )}
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
@@ -1011,7 +1011,7 @@ const MCPConfig: React.FC<MCPConfigProps> = ({ vscode }) => {
                     loading ? (
                         <div className="agent-loading">加载中...</div>
                     ) : (
-                        <div className="agent-sections mcp-installed">
+                        <div className="agent-sections">
                             {totalToolCount > MAX_TOOL_COUNT && (
                                 <div className="mcp-tool-warning">
                                     <div className="mcp-tool-warning-icon">

@@ -1,0 +1,519 @@
+/* 插件配置页面样式 */
+
+.mcp-btn.danger {
+    background-color: #ef4444;
+    color: #fff;
+    border: none;
+}
+
+.mcp-btn.danger:hover {
+    background-color: #dc2626;
+}
+
+/* 已安装插件列表 - 纵向单列布局 */
+.plugin-list.agent-list {
+    grid-template-columns: 1fr;
+}
+
+/* 插件卡片 - 参考市场区块布局，卡片本身不设 padding */
+.plugin-card {
+    overflow: hidden;
+    padding: 0;
+}
+
+.plugin-card-header.agent-header {
+    margin-bottom: 0;
+    padding: 10px 14px;
+    gap: 8px;
+}
+
+/* 插件名称图标 - 圆形背景 + 首字母 */
+.plugin-name-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* 插件版本 */
+.plugin-version {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    background: var(--vscode-badge-background);
+    padding: 1px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+/* 插件作用域标签 */
+.plugin-scope-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* 插件操作按钮组 */
+.plugin-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+}
+
+/* 展开详情区域 */
+.plugin-detail {
+    border-top: 1px solid var(--vscode-panel-border);
+    padding: 10px 14px;
+    background: var(--vscode-editor-background);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* meta 与 components 之间加大间距 */
+.plugin-detail .plugin-meta + .plugin-components {
+    margin-top: 8px;
+}
+
+/* 描述 & 作者 */
+.plugin-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.plugin-description {
+    font-size: 12px;
+    color: var(--vscode-foreground);
+    line-height: 1.5;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.plugin-description.collapsed {
+    display: inline;
+}
+
+.description-toggle {
+    display: inline;
+    margin-left: 4px;
+    color: var(--vscode-textLink-foreground);
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.description-toggle:hover {
+    text-decoration: underline;
+}
+
+.plugin-author {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+}
+
+/* 来源信息 */
+.plugin-source-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.plugin-source-label {
+    color: var(--vscode-descriptionForeground);
+    flex-shrink: 0;
+}
+
+.plugin-source-value {
+    color: var(--vscode-foreground);
+    opacity: 0.8;
+    word-break: break-all;
+}
+
+/* 版本行 */
+.plugin-version-row {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    opacity: 0.8;
+}
+
+/* 组件列表 */
+.plugin-components {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.plugin-component-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.plugin-component-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--vscode-descriptionForeground);
+    flex-shrink: 0;
+}
+
+.plugin-component-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.plugin-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: var(--vscode-badge-background);
+    color: var(--vscode-badge-foreground);
+    border-radius: 4px;
+    opacity: 0.7;
+}
+
+.plugin-badge-more {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.plugin-badge-more:hover {
+    opacity: 0.8;
+}
+
+/* Tab 数量角标 */
+.plugin-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: var(--vscode-badge-background);
+    color: var(--vscode-badge-foreground);
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+/* 空状态 */
+.plugin-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px 20px;
+    color: var(--vscode-descriptionForeground);
+}
+
+.plugin-empty-state p {
+    font-size: 13px;
+    margin: 0;
+}
+
+/* Tab 导航右侧操作区 */
+.plugin-tab-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+}
+
+.plugin-tab-actions .mcp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ============ 插件市场 Tab ============ */
+
+.plugin-market {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 市场区块 */
+.plugin-marketplace-section {
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 8px;
+    overflow: hidden;
+    gap: 0;
+}
+
+/* 市场头部 */
+.plugin-marketplace-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    background: var(--vscode-sideBar-background);
+}
+
+/* 市场名称与来源 */
+.plugin-marketplace-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.plugin-marketplace-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.plugin-marketplace-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--vscode-foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.plugin-marketplace-readonly {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(128, 128, 128, 0.12);
+    color: var(--vscode-descriptionForeground);
+    border: 1px solid var(--vscode-panel-border);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.plugin-marketplace-source {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.8;
+}
+
+/* 最后更新时间 */
+.plugin-marketplace-date {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    flex-shrink: 0;
+    opacity: 0.6;
+    white-space: nowrap;
+}
+
+/* 市场操作按钮 */
+.plugin-marketplace-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* 可用插件列表 */
+.plugin-available-list {
+    border-top: 1px solid var(--vscode-panel-border);
+    padding: 8px 12px;
+    background: var(--vscode-editor-background);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* 可用插件卡片 */
+.plugin-available-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.plugin-available-card:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.plugin-available-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.plugin-available-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.plugin-available-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--vscode-foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.plugin-available-desc {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.plugin-available-author {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+    opacity: 0.7;
+}
+
+.plugin-available-right {
+    flex-shrink: 0;
+}
+
+/* 安装按钮与已安装标签缩小 */
+.mcp-install-btns .mcp-btn.small {
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+.plugin-available-right .mcp-installed-badge {
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+/* ============ 添加市场弹窗 ============ */
+
+/* 来源类型 Tab */
+.plugin-source-tabs {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.plugin-source-tab {
+    flex: 1;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--vscode-descriptionForeground);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.plugin-source-tab:not(:last-child) {
+    border-right: 1px solid var(--vscode-panel-border);
+}
+
+.plugin-source-tab:hover:not(.active) {
+    background: var(--vscode-list-hoverBackground);
+    color: var(--vscode-foreground);
+}
+
+.plugin-source-tab.active {
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+}
+
+/* 来源输入框 */
+.plugin-source-input-wrap {
+    margin-bottom: 4px;
+}
+
+.plugin-source-input {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.plugin-source-input:focus {
+    border-color: var(--vscode-focusBorder);
+}
+
+.plugin-source-input::placeholder {
+    color: var(--vscode-input-placeholderForeground);
+}
+
+
+/* ============ 分页 ============ */
+
+.plugin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 0 4px;
+    border-top: 1px solid var(--vscode-panel-border);
+    margin-top: 4px;
+}
+
+.plugin-page-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--vscode-foreground);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.plugin-page-btn:hover:not(:disabled) {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.plugin-page-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.plugin-page-info {
+    font-size: 12px;
+    color: var(--vscode-descriptionForeground);
+    min-width: 48px;
+    text-align: center;
+}
