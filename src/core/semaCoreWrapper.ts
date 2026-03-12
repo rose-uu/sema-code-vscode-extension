@@ -39,7 +39,6 @@ import {
     MCPServerInfo,
     ToolInfo,
     SkillInfo,
-    AgentInfo,
     AgentConfig,
     MAIN_AGENT_ID,
     MarketplacePluginsInfo,
@@ -127,8 +126,8 @@ export class SemaCoreWrapper {
         // 加载 useTools 配置
         const useTools = this.systemConfigManager.getUseTools();
 
-       // console.log('systemConfig:', systemConfig);
-       // console.log('useTools:', useTools);
+        // console.log('systemConfig:', systemConfig);
+        // console.log('useTools:', useTools);
 
         const config: SemaCoreConfig = {
             workingDir,
@@ -161,7 +160,7 @@ export class SemaCoreWrapper {
                 title = title.substring(0, 50) + '...';
             }
             this.title = title || '新对话';
-           // console.log(`生成会话标题: ${this.title}`);
+            // console.log(`生成会话标题: ${this.title}`);
         }
 
         // 添加用户消息到历史记录
@@ -184,7 +183,7 @@ export class SemaCoreWrapper {
         if (this.currentState === 'processing') {
             this.semaCore.interruptSession();
         } else {
-           // console.log('Session not in processing state, interrupt ignored');
+            // console.log('Session not in processing state, interrupt ignored');
         }
     }
 
@@ -219,14 +218,14 @@ export class SemaCoreWrapper {
     private setupEventListeners(): void {
         // 监听会话生命周期事件
         this.semaCore.on<SessionReadyData>('session:ready', (data) => {
-           // console.log('Session ready:', data);
+            // console.log('Session ready:', data);
             this.currentSessionId = data.sessionId;
             this.callbacks.onSessionReady?.(data);
         });
 
         // 监听文件引用事件
         this.semaCore.on<FileReferenceData>('file:reference', (data) => {
-           // console.log('File reference:', data);
+            // console.log('File reference:', data);
             if (data.references && data.references.length > 0) {
                 this.messageHistory.push({
                     type: 'system',
@@ -241,7 +240,7 @@ export class SemaCoreWrapper {
         });
 
         this.semaCore.on<SessionInterruptedData & { agentId?: string }>('session:interrupted', (data) => {
-           // console.log('Session interrupted:', data);
+            // console.log('Session interrupted:', data);
 
             const USER_INTERRUPT_MESSAGE = '[Request interrupted by user]';
             const interruptType = data.content === USER_INTERRUPT_MESSAGE ? 'interrupt' : 'interrupt_by_tool';
@@ -299,7 +298,7 @@ export class SemaCoreWrapper {
 
         // 监听状态更新事件
         this.semaCore.on<StateUpdateData>('state:update', (data) => {
-           // console.log('State update:', data);
+            // console.log('State update:', data);
             this.currentState = data.state;
             this.callbacks.onStateChange?.(data.state);
         });
@@ -363,7 +362,7 @@ export class SemaCoreWrapper {
         });
 
         this.semaCore.on<MessageCompleteData & { agentId?: string }>('message:complete', (data) => {
-           // console.log('AI response complete:', data);
+            // console.log('AI response complete:', data);
 
             // 如果 content 为空且没有 reasoning 且没有工具调用，则不处理此消息
             // 注意：可能只有 thinking 和工具调用，没有 text 内容
@@ -449,12 +448,12 @@ export class SemaCoreWrapper {
 
         // 监听工具相关事件
         this.semaCore.on<ToolPermissionRequestData>('tool:permission:request', (data) => {
-           // console.log('Tool permission request:', data);
+            // console.log('Tool permission request:', data);
             this.callbacks.onToolPermissionRequest?.(data);
         });
 
         this.semaCore.on<ToolExecutionCompleteData & { agentId?: string }>('tool:execution:complete', (data) => {
-           // console.log('Tool execution complete:', data);
+            // console.log('Tool execution complete:', data);
 
             // 检查是否为子代理消息
             const agentId = data.agentId;
@@ -520,12 +519,12 @@ export class SemaCoreWrapper {
 
         // 监听todos和topic更新事件
         this.semaCore.on<TodosUpdateData>('todos:update', (data) => {
-           // console.log('Todos update:', data);
+            // console.log('Todos update:', data);
             this.callbacks.onTodosUpdate?.(data);
         });
 
         this.semaCore.on<TopicUpdateData>('topic:update', (data) => {
-           // console.log('Topic update:', data);
+            // console.log('Topic update:', data);
 
             // 只有当标题真正发生变化时才触发回调
             if (data.title && data.title.trim() && this.title !== data.title) {
@@ -536,7 +535,7 @@ export class SemaCoreWrapper {
 
         // 监听使用统计事件
         this.semaCore.on<ConversationUsageData>('conversation:usage', (data) => {
-           // console.log('Conversation usage:', data);
+            // console.log('Conversation usage:', data);
             this.callbacks.onUsageUpdate?.(data);
         });
 
@@ -549,7 +548,7 @@ export class SemaCoreWrapper {
                 return tokens.toString();
             };
 
-           // console.log('Compact exec:', data);
+            // console.log('Compact exec:', data);
 
             let finalContent = '';
 
@@ -575,7 +574,7 @@ export class SemaCoreWrapper {
 
         // 监听会话清除事件
         this.semaCore.on<{ sessionId: string | null }>('session:cleared', (data) => {
-           // console.log('Session cleared:', data);
+            // console.log('Session cleared:', data);
             this.clearMessageHistory();
             // 恢复标题以便保存时能正确标识会话
             this.title = '新会话';
@@ -599,19 +598,19 @@ export class SemaCoreWrapper {
 
         // 监听问答请求事件
         this.semaCore.on<AskQuestionRequestData>('ask:question:request', (data) => {
-           // console.log('Ask question request:', data);
+            // console.log('Ask question request:', data);
             this.callbacks.onAskQuestionRequest?.(data);
         });
 
         // 监听退出Plan模式请求事件
         this.semaCore.on<PlanExitRequestData>('plan:exit:request', (data) => {
-           // console.log('Plan exit request:', data);
+            // console.log('Plan exit request:', data);
             this.callbacks.onPlanExitRequest?.(data);
         });
 
         // 监听计划实施事件
         this.semaCore.on<PlanImplementData>('plan:implement', (data) => {
-           // console.log('Plan implement:', data);
+            // console.log('Plan implement:', data);
             // 将计划实施信息添加到消息历史
             this.messageHistory.push({
                 type: 'system',
@@ -627,12 +626,12 @@ export class SemaCoreWrapper {
 
         // 监听子代理事件
         this.semaCore.on<TaskAgentStartData>('task:agent:start', (data) => {
-           // console.log('Task agent start:', data);
+            // console.log('Task agent start:', data);
             this.handleTaskAgentStart(data);
         });
 
         this.semaCore.on<TaskAgentEndData>('task:agent:end', (data) => {
-           // console.log('Task agent end:', data);
+            // console.log('Task agent end:', data);
             this.handleTaskAgentEnd(data);
         });
     }
@@ -794,7 +793,7 @@ export class SemaCoreWrapper {
      * 更新消息历史
      */
     public updateMessageHistory(message: Message[]): void {
-       // console.log('更新消息历史')
+        // console.log('更新消息历史')
         this.messageHistory = message;
         this.sendContentUpdate();
     }
@@ -803,7 +802,7 @@ export class SemaCoreWrapper {
      * 更新会话标题
      */
     public updateTitle(title: string): void {
-       // console.log('更新会话标题:', title);
+        // console.log('更新会话标题:', title);
         this.title = title;
     }
 
@@ -811,7 +810,7 @@ export class SemaCoreWrapper {
      * 清空消息历史
      */
     public clearMessageHistory(): void {
-       // console.log('清空消息历史')
+        // console.log('清空消息历史')
         this.messageHistory = [];
         this.title = '';
         this.taskAgentMap.clear(); // 清理子代理映射
@@ -918,20 +917,6 @@ export class SemaCoreWrapper {
      */
     public connectMCPServer(name: string): Promise<MCPServerInfo> {
         return this.semaCore.connectMCPServer(name);
-    }
-
-    /**
-     * 获取 Agents 信息列表
-     */
-    public getAgentsInfo(): AgentInfo[] {
-        return this.semaCore.getAgentsInfo();
-    }
-
-    /**
-     * 添加 Agents 
-     */
-    public addAgentConf(agentConf: AgentConfig): Promise<boolean> {
-        return this.semaCore.addAgentConf(agentConf);
     }
 
     /**
@@ -1243,12 +1228,42 @@ export class SemaCoreWrapper {
         return await this.semaCore.getMarketplacePluginsInfo();
     }
 
+    // ===== agent管理相关方法 =====
+
+    /**
+     * 获取 Agents 信息列表
+     */
+    public getAgentsInfo(): Promise<AgentConfig[]> {
+        return this.semaCore.getAgentsInfo();
+    }
+
+    /**
+     * 重新加载 Agents 信息列表
+     */
+    public refreshAgentsInfo(): Promise<AgentConfig[]> {
+        return this.semaCore.refreshAgentsInfo();
+    }
+
+    /**
+     * 添加 Agents 
+     */
+    public addAgentConf(agentConf: AgentConfig): Promise<AgentConfig[]> {
+        return this.semaCore.addAgentConf(agentConf);
+    }
+
+    /**
+     * 移除 Agents 
+     */
+    public removeAgentConf(name: string): Promise<AgentConfig[]> {
+        return this.semaCore.removeAgentConf(name);
+    }
+
     /**
      * 销毁wrapper实例
      */
     public dispose(): void {
         try {
-           // console.log('Disposing SemaCoreWrapper...');
+            // console.log('Disposing SemaCoreWrapper...');
 
             // 销毁 SemaCore 实例
             this.semaCore.dispose();
@@ -1264,7 +1279,7 @@ export class SemaCoreWrapper {
             // 清空回调函数
             this.callbacks = {};
 
-           // console.log('SemaCoreWrapper disposed successfully');
+            // console.log('SemaCoreWrapper disposed successfully');
         } catch (error) {
             console.error('Error disposing SemaCoreWrapper:', error);
         }

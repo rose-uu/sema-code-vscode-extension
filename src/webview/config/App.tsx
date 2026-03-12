@@ -83,7 +83,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     className={`nav-item nav-main ${currentPage === 'agent' ? 'active' : ''}`}
                     onClick={() => setCurrentPage('agent')}
                 >
-                    SubAgents
+                    Agents
                 </div>
 
                 <div

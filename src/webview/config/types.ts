@@ -146,28 +146,6 @@ export interface SystemToolsData {
   tools: SystemToolInfo[]
 }
 
-// Agent 位置类型
-export type AgentLocate = 'builtin' | 'project' | 'user';
-
-// Agent 信息类型
-export interface AgentInfo {
-  name: string;
-  description: string;
-  tools?: string[] | '*';
-  model?: string;  // main | quick，默认 main
-  locate: AgentLocate;
-}
-
-// Agent 配置类型（用于创建新 Agent）
-export interface AgentConfig {
-  name: string;
-  description: string;
-  tools?: string[] | '*';
-  prompt: string;
-  model?: string;
-  locate?: AgentLocate;
-}
-
 // Skill 位置类型
 export type SkillLocate = 'user' | 'project';
 

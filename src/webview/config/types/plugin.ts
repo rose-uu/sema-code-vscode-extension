@@ -1,4 +1,5 @@
-// Plugin types for PluginConfig component
+export type PluginTabType = 'installed' | 'market';
+
 export type PluginScope = 'local' | 'project' | 'user';
 
 export interface PluginSource {

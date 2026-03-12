@@ -11,56 +11,19 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
     GitPullIcon,
+    GitHubIcon
 } from './utils/svgIcons';
+import {
+    PluginScope,
+    PluginInfo,
+    MarketplaceInfo,
+    AvailablePlugin,
+    PluginTabType,
+    MarketplacePluginsInfo
+
+} from './types/plugin';
 import './style/plugin.css';
 import './style/agent.css';
-
-type PluginTabType = 'installed' | 'market';
-type PluginScope = 'local' | 'project' | 'user';
-
-interface PluginSource {
-    source: 'github' | 'directory';
-    repo?: string;
-    path?: string;
-}
-
-interface AvailablePlugin {
-    name: string;
-    description: string;
-    author: string;
-}
-
-interface MarketplaceInfo {
-    name: string;
-    source: PluginSource;
-    lastUpdated: string;
-    available: AvailablePlugin[];
-    installed: string[];
-    from: string;
-}
-
-interface PluginComponents {
-    commands: string[];
-    agents: string[];
-    skills: string[];
-}
-
-interface PluginInfo {
-    name: string;
-    marketplace: string;
-    scope: PluginScope;
-    status: boolean;
-    version?: string;
-    description?: string;
-    author?: string;
-    components: PluginComponents;
-    from: string;
-}
-
-interface MarketplacePluginsInfo {
-    marketplaces: MarketplaceInfo[];
-    plugins: PluginInfo[];
-}
 
 interface PluginConfigProps {
     vscode: VscodeApi;
@@ -72,7 +35,7 @@ const SCOPE_SECTION_TITLES: Record<string, string> = {
     local: '本地 Plugins',
     project: '项目级 Plugins',
     user: '用户级 Plugins',
-    other: '其他 Plugins'
+    other: '外部 Plugins'
 };
 
 // 插件名称图标
@@ -146,7 +109,7 @@ const InstalledPluginCard: React.FC<{
                 <PluginNameIcon name={plugin.name} />
                 <span className="agent-name">{displayName}</span>
                 {isReadonly && (
-                    <span className="plugin-marketplace-readonly">只读</span>
+                    <span className="readonly-tab">只读</span>
                 )}
                 {!isReadonly && (
                     <div className="plugin-card-actions">
@@ -217,31 +180,6 @@ const InstalledPluginCard: React.FC<{
         </div>
     );
 };
-
-// 确认弹窗
-const ConfirmModal: React.FC<{
-    message: string;
-    onConfirm: () => void;
-    onCancel: () => void;
-}> = ({ message, onConfirm, onCancel }) => (
-    <div className="mcp-modal-overlay" onClick={onCancel}>
-        <div className="mcp-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 360 }}>
-            <div className="mcp-modal-header">
-                <span>确认操作</span>
-                <button className="mcp-modal-close" onClick={onCancel}>
-                    <CloseIcon />
-                </button>
-            </div>
-            <div className="mcp-modal-body">
-                <p style={{ margin: 0 }}>{message}</p>
-            </div>
-            <div className="mcp-modal-footer">
-                <button className="mcp-btn secondary" onClick={onCancel}>取消</button>
-                <button className="mcp-btn danger" onClick={onConfirm}>确认</button>
-            </div>
-        </div>
-    </div>
-);
 
 // 添加市场弹窗
 const AddMarketplaceModal: React.FC<{
@@ -323,11 +261,12 @@ const MarketplaceSection: React.FC<{
     onInstall: (plugin: AvailablePlugin, marketplace: MarketplaceInfo, scope: PluginScope) => void;
     onUpdate: (marketplaceName: string) => void;
     onRemove: (marketplaceName: string) => void;
+    onOpenExternal?: (url: string) => void;
     isUpdating?: boolean;
     isRemoving?: boolean;
     installingKeys?: Set<string>;
     search?: string;
-}> = ({ marketplace, installedPlugins, onInstall, onUpdate, onRemove, isUpdating, isRemoving, installingKeys, search = '' }) => {
+}> = ({ marketplace, installedPlugins, onInstall, onUpdate, onRemove, onOpenExternal, isUpdating, isRemoving, installingKeys, search = '' }) => {
     const [expanded, setExpanded] = useState(true);
     const [page, setPage] = useState(1);
 
@@ -365,7 +304,11 @@ const MarketplaceSection: React.FC<{
 
     const isReadonly = marketplace.from !== 'sema';
 
-    const sourceLabel = marketplace.source.source === 'github'
+    const isGithubSource = marketplace.source.source === 'github';
+    const githubUrl = isGithubSource && marketplace.source.repo
+        ? `https://github.com/${marketplace.source.repo}`
+        : null;
+    const sourceLabel = isGithubSource
         ? (marketplace.source.repo || 'GitHub')
         : (marketplace.source.path || '本地目录');
 
@@ -383,10 +326,25 @@ const MarketplaceSection: React.FC<{
                     <div className="plugin-marketplace-name-row">
                         <span className="plugin-marketplace-name">{marketplace.name}</span>
                         {marketplace.from !== 'sema' && (
-                            <span className="plugin-marketplace-readonly">只读</span>
+                            <span className="readonly-tab">只读</span>
                         )}
                     </div>
-                    <span className="plugin-marketplace-source">{sourceLabel}</span>
+                    {githubUrl ? (
+                        <a
+                            className="plugin-marketplace-source plugin-marketplace-source-link"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onOpenExternal?.(githubUrl);
+                            }}
+                            href="#"
+                            title={githubUrl}
+                        >
+                            <GitHubIcon size={14} />
+                            {sourceLabel}
+                        </a>
+                    ) : (
+                        <span className="plugin-marketplace-source">{sourceLabel}</span>
+                    )}
                     <span className="plugin-marketplace-date">
                         {marketplace.available.length} available · {installedPlugins.length} installed
                         {marketplace.lastUpdated && ` · ${marketplace.lastUpdated}`}
@@ -505,11 +463,11 @@ const MarketplaceSection: React.FC<{
 
 const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
     const [activeTab, setActiveTab] = useState<PluginTabType>('installed');
+    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
     const [data, setData] = useState<MarketplacePluginsInfo>({ marketplaces: [], plugins: [] });
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
-    const [confirmState, setConfirmState] = useState<{ message: string; onConfirm: () => void } | null>(null);
     const [uninstallingKeys, setUninstallingKeys] = useState<Set<string>>(new Set());
     const [updatingNames, setUpdatingNames] = useState<Set<string>>(new Set());
     const [removingNames, setRemovingNames] = useState<Set<string>>(new Set());
@@ -638,20 +596,14 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
     };
 
     const handleUninstall = (plugin: PluginInfo) => {
-        setConfirmState({
-            message: `确定要卸载插件「${plugin.name}」吗？`,
-            onConfirm: () => {
-                setConfirmState(null);
-                const key = `${plugin.marketplace}/${plugin.name}`;
-                setUninstallingKeys(prev => new Set(prev).add(key));
-                vscode.postMessage({
-                    command: 'uninstallPlugin',
-                    pluginName: plugin.name,
-                    marketplaceName: plugin.marketplace,
-                    scope: plugin.scope,
-                    key
-                });
-            }
+        const key = `${plugin.marketplace}/${plugin.name}`;
+        setUninstallingKeys(prev => new Set(prev).add(key));
+        vscode.postMessage({
+            command: 'uninstallPlugin',
+            pluginName: plugin.name,
+            marketplaceName: plugin.marketplace,
+            scope: plugin.scope,
+            key
         });
     };
 
@@ -673,14 +625,8 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
     };
 
     const handleRemoveMarketplace = (name: string) => {
-        setConfirmState({
-            message: `确定要移除插件市场「${name}」吗？`,
-            onConfirm: () => {
-                setConfirmState(null);
-                setRemovingNames(prev => new Set(prev).add(name));
-                vscode.postMessage({ command: 'removeMarketplace', marketplaceName: name, name });
-            }
-        });
+        setRemovingNames(prev => new Set(prev).add(name));
+        vscode.postMessage({ command: 'removeMarketplace', marketplaceName: name, name });
     };
 
     const handleRefresh = () => {
@@ -748,12 +694,20 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
                         <div className="agent-sections">
                             {[...SCOPE_ORDER, 'other'].map(scope => {
                                 const sectionPlugins = groupedPlugins[scope] || [];
+                                if (scope === 'other' && sectionPlugins.length === 0) return null;
+                                const isCollapsed = collapsedSections.has(scope);
+                                const toggleCollapse = () => setCollapsedSections(prev => {
+                                    const next = new Set(prev);
+                                    if (next.has(scope)) next.delete(scope); else next.add(scope);
+                                    return next;
+                                });
                                 return (
                                     <div key={scope} className={`agent-section section-${scope}`}>
-                                        <div className="section-group-title">
+                                        <div className="section-group-title section-group-title-collapsible" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={toggleCollapse}>
                                             {SCOPE_SECTION_TITLES[scope]}
+                                            <span className={`section-collapse-arrow ${isCollapsed ? 'collapsed' : ''}`} />
                                         </div>
-                                        {sectionPlugins.length === 0 ? (
+                                        {!isCollapsed && (sectionPlugins.length === 0 ? (
                                             <div className="section-empty">
                                                 暂无 Plugin
                                             </div>
@@ -771,7 +725,7 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
                                                     />
                                                 ))}
                                             </div>
-                                        )}
+                                        ))}
                                     </div>
                                 );
                             })}
@@ -803,10 +757,11 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
                                     <MarketplaceSection
                                         key={`${marketplace.name}-${index}`}
                                         marketplace={marketplace}
-                                        installedPlugins={data.plugins.filter(p => p.marketplace === marketplace.name)}
+                                        installedPlugins={data.plugins.filter(p => p.marketplace === marketplace.name && p.from === marketplace.from)}
                                         onInstall={handleInstall}
                                         onUpdate={handleUpdateMarketplace}
                                         onRemove={handleRemoveMarketplace}
+                                        onOpenExternal={(url) => vscode.postMessage({ command: 'openExternal', url })}
                                         isUpdating={updatingNames.has(marketplace.name)}
                                         isRemoving={removingNames.has(marketplace.name)}
                                         installingKeys={installingKeys}
@@ -818,15 +773,6 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
                     </div>
                 )}
             </div>
-
-            {/* 确认弹窗 */}
-            {confirmState && (
-                <ConfirmModal
-                    message={confirmState.message}
-                    onConfirm={confirmState.onConfirm}
-                    onCancel={() => setConfirmState(null)}
-                />
-            )}
 
             {/* 添加市场弹窗 */}
             {showAddModal && (

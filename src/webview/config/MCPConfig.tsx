@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { VscodeApi, MCPData, MCPServerInfo, MCPScopeType, MCPServerConfig, ToolInfo, SystemToolInfo } from './types';
+import { ExpandArrowIcon, RefreshIcon, EditIcon, TrashIcon, CloseIcon, GearIcon, GitHubIcon, WarningCircleIcon } from './utils/svgIcons';
 import { defaultMCPMarketInfos, MCPMarketInfo } from './default/defaultMCPMarket';
 import { inlineSvgIcons } from './mcpIcon';
 import { initialBgColors, hashString, getColorByName } from './utils/iconUtils';
@@ -83,9 +84,7 @@ const MCPServerItem: React.FC<{
                     className={`mcp-expand-btn ${expanded ? 'expanded' : ''}`}
                     onClick={() => setExpanded(!expanded)}
                 >
-                    <svg width="12" height="12" viewBox="0 0 12 12">
-                        <path d="M4 2 L8 6 L4 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <ExpandArrowIcon />
                 </button>
                 <MCPNameIcon name={server.config.name} />
                 <span className="agent-name">{server.config.name}</span>
@@ -107,10 +106,7 @@ const MCPServerItem: React.FC<{
                         {isReconnecting ? (
                             <span className="spinner" />
                         ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M23 4v6h-6M1 20v-6h6" />
-                                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-                            </svg>
+                            <RefreshIcon />
                         )}
                     </button>
                     <button
@@ -118,10 +114,7 @@ const MCPServerItem: React.FC<{
                         onClick={() => onEdit(server, scope)}
                         title="编辑配置"
                     >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
+                        <EditIcon />
                     </button>
                     <button
                         className={`mcp-icon-btn mcp-icon-btn-danger ${isDeleting ? 'btn-loading' : ''}`}
@@ -132,11 +125,7 @@ const MCPServerItem: React.FC<{
                         {isDeleting ? (
                             <span className="spinner" />
                         ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                                <line x1="10" y1="11" x2="10" y2="17" />
-                                <line x1="14" y1="11" x2="14" y2="17" />
-                            </svg>
+                            <TrashIcon />
                         )}
                     </button>
                     <label className="mcp-switch">
@@ -257,14 +246,10 @@ const SystemToolsGroup: React.FC<{
                             className={`mcp-expand-btn ${expanded ? 'expanded' : ''}`}
                             onClick={() => setExpanded(!expanded)}
                         >
-                            <svg width="12" height="12" viewBox="0 0 12 12">
-                                <path d="M4 2 L8 6 L4 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            <ExpandArrowIcon />
                         </button>
                         <div className="agent-icon mcp-builtin-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                                <path fill="currentColor" d="M24.5 17.3c-.4-.1-.8-.3-1.1-.4 0-.7-.1-1.3-.1-2 0-.1.1-.1.1-.2.4-.2.7-.3 1.1-.5.4-.2.5-.6.4-1-.3-.7-.6-1.3-.9-2-.2-.4-.6-.6-1-.4-.4.2-.7.3-1.1.5-.1 0-.2 0-.2-.1-.2-.3-.5-.5-.7-.7-.2-.2-.5-.4-.7-.6.2-.4.3-.8.5-1.2.2-.5 0-.9-.5-1.1-.6-.1-1.3-.4-1.9-.6-.5-.2-.9 0-1.1.5-.1.4-.3.8-.4 1.1-.7 0-1.3.1-2 .1-.1 0-.1-.1-.2-.1-.2-.4-.3-.7-.5-1.1-.2-.4-.6-.5-1-.4-.7.3-1.3.6-2 .9-.4.2-.6.6-.4 1 .2.4.3.7.5 1.1 0 .1 0 .2-.1.2-.2.2-.4.3-.5.5-.3.3-.5.6-.8.9-.4-.1-.8-.3-1.1-.4-.5-.2-.9 0-1.1.5-.2.5-.5 1.2-.7 1.8-.2.6-.1.9.5 1.1.4.1.8.3 1.1.4 0 .7.1 1.3.1 2 0 .1-.1.1-.1.2-.4.2-.7.3-1.1.5-.4.2-.5.6-.4 1 .3.7.6 1.3.9 2 .2.4.6.6 1 .4.4-.2.7-.3 1.1-.5.1 0 .2 0 .2.1.2.3.5.5.7.7.2.2.5.4.7.6-.2.4-.3.8-.5 1.2-.2.5 0 .9.5 1.1.6.2 1.2.5 1.9.7.6.2.9.1 1.1-.5.1-.4.3-.8.4-1.1.7 0 1.3-.1 2-.1.1 0 .1.1.2.1.2.4.3.7.5 1.1.2.4.6.5 1 .4.7-.3 1.3-.6 2-.9.4-.2.6-.6.4-1-.2-.4-.3-.7-.5-1.1 0-.1 0-.2.1-.2.3-.2.5-.5.7-.7.2-.2.4-.5.6-.7.4.1.8.3 1.1.4.5.2.9 0 1.1-.5.2-.6.5-1.2.7-1.9.2-.5.1-.9-.5-1.1zm-7 2.1c-1.9.8-4 0-4.9-1.9-.8-1.9 0-4 1.9-4.9 1.9-.8 4 0 4.9 1.9.8 1.9 0 4-1.9 4.9z"/>
-                            </svg>
+                            <GearIcon />
                         </div>
                         <span className="agent-name">内置工具</span>
                         <span
@@ -278,31 +263,21 @@ const SystemToolsGroup: React.FC<{
                                 disabled
                                 title="重新连接"
                             >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M23 4v6h-6M1 20v-6h6" />
-                                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-                                </svg>
+                                <RefreshIcon />
                             </button>
                             <button
                                 className="mcp-icon-btn"
                                 disabled
                                 title="编辑配置"
                             >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                </svg>
+                                <EditIcon />
                             </button>
                             <button
                                 className="mcp-icon-btn mcp-icon-btn-danger"
                                 disabled
                                 title="删除"
                             >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                                    <line x1="10" y1="11" x2="10" y2="17" />
-                                    <line x1="14" y1="11" x2="14" y2="17" />
-                                </svg>
+                                <TrashIcon />
                             </button>
                             <label className="mcp-switch mcp-switch-disabled">
                                 <input
@@ -482,10 +457,7 @@ const MCPEditModal: React.FC<{
                 <div className="mcp-modal-header">
                     <span>编辑 MCP 配置 - {server.config.name}</span>
                     <button className="mcp-modal-close" onClick={onClose}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
+                        <CloseIcon />
                     </button>
                 </div>
                 <div className="mcp-modal-body">
@@ -663,14 +635,12 @@ const MCPMarketCard: React.FC<{
                     className={`mcp-expand-btn ${expanded ? 'expanded' : ''}`}
                     onClick={() => setExpanded(!expanded)}
                 >
-                    <svg width="12" height="12" viewBox="0 0 12 12">
-                        <path d="M4 2 L8 6 L4 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <ExpandArrowIcon />
                     <span>{item.tools.length} Tools</span>
                 </button>
                 {item.github && (
                     <a
-                        href={item.github}
+                        href="#"
                         className="mcp-github-link"
                         onClick={(e) => {
                             e.preventDefault();
@@ -679,9 +649,7 @@ const MCPMarketCard: React.FC<{
                         }}
                         title="查看源码"
                     >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                        </svg>
+                        <GitHubIcon />
                         {author && <span className="mcp-author">{author}</span>}
                     </a>
                 )}
@@ -1015,11 +983,7 @@ const MCPConfig: React.FC<MCPConfigProps> = ({ vscode }) => {
                             {totalToolCount > MAX_TOOL_COUNT && (
                                 <div className="mcp-tool-warning">
                                     <div className="mcp-tool-warning-icon">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <circle cx="12" cy="12" r="10" />
-                                            <line x1="12" y1="8" x2="12" y2="12" />
-                                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                                        </svg>
+                                        <WarningCircleIcon />
                                     </div>
                                     <div className="mcp-tool-warning-content">
                                         <div className="mcp-tool-warning-title">
