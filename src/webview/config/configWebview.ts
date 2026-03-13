@@ -18,7 +18,7 @@ export class ConfigWebviewProvider {
 
         this.panel = vscode.window.createWebviewPanel(
             'semaConfig', 'Code Agent 配置', vscode.ViewColumn.One,
-            { enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'dist')] }
+            { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'dist')] }
         );
 
         this.panel.webview.html = this.getHtmlContent(this.panel.webview, extensionUri);
@@ -327,7 +327,7 @@ export class ConfigWebviewProvider {
         try {
             await this.ensureCoreReady();
             const pluginsInfo = await this.coreManager.getMarketplacePluginsInfo();     
-            // console.log('[loadPluginsInfo] data:', JSON.stringify(pluginsInfo, null, 2));
+            // console.log('[loadPluginsInfo] data:', pluginsInfo);
             this.postMessage({ command: 'loadPluginConfigResult', success: true, data: pluginsInfo });
         } catch (error) {
             this.postMessage({ command: 'loadPluginConfigResult', success: false, data: { marketplaces: [], plugins: [] }, message: (error as Error).message });
@@ -407,7 +407,7 @@ export class ConfigWebviewProvider {
         try {
             await this.ensureCoreReady();
             const agentsInfo = await this.coreManager.getAgentsInfo();
-            // console.log('[loadAgentsInfo] data:', JSON.stringify(agentsInfo, null, 2));
+            // console.log('[loadAgentsInfo] data:', agentsInfo);
             this.postMessage({ command: 'loadAgentsInfoResult', success: true, data: agentsInfo });
         } catch (error) {
             this.postMessage({ command: 'loadAgentsInfoResult', success: false, data: [], message: (error as Error).message });

@@ -12,16 +12,18 @@ interface AgentConfigProps {
 
 type AgentTabType = 'installed' | 'add';
 
-const LOCATE_ORDER: AgentScope[] = ['builtin', 'project', 'user'];
+const LOCATE_ORDER: AgentScope[] = ['builtin', 'plugin', 'project', 'user'];
 
 const LOCATE_SECTION_TITLES: Record<AgentScope, string> = {
     builtin: '内置 Agents',
+    plugin: '插件 Agents',
     project: '项目级 Agents',
     user: '用户级 Agents'
 };
 
 const LOCATE_PATHS: Record<AgentScope, string> = {
     builtin: '',
+    plugin: '',
     project: '.sema/agents/',
     user: '~/.sema/agents/'
 };
@@ -39,6 +41,7 @@ const AgentConfig: React.FC<AgentConfigProps> = ({ vscode }) => {
     const groupedAgents = useMemo(() => {
         const groups: Record<AgentScope | 'other', AgentConfigItem[]> = {
             builtin: [],
+            plugin: [],
             project: [],
             user: [],
             other: []
@@ -285,7 +288,7 @@ const AgentConfig: React.FC<AgentConfigProps> = ({ vscode }) => {
     const ALL_SECTIONS: Array<AgentScope | 'other'> = [...LOCATE_ORDER, 'other'];
     const SECTION_TITLES: Record<AgentScope | 'other', string> = {
         ...LOCATE_SECTION_TITLES,
-        other: '外部 Agents'
+        other: '外部 Agents',
     };
 
     return (

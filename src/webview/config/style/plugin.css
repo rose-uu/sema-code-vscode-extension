@@ -184,6 +184,17 @@
     opacity: 0.7;
 }
 
+.plugin-badge-link {
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.plugin-badge-link:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
 .plugin-badge-more {
     font-size: 10px;
     padding: 2px 6px;

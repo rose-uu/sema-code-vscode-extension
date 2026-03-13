@@ -16,6 +16,7 @@ import {
 import {
     PluginScope,
     PluginInfo,
+    PluginComponentItem,
     MarketplaceInfo,
     AvailablePlugin,
     PluginTabType,
@@ -50,7 +51,7 @@ const PluginNameIcon: React.FC<{ name: string }> = ({ name }) => {
 };
 
 // 组件标签列表 - 竖向排列，最多显示3项
-const ComponentBadges: React.FC<{ label: string; items: string[] }> = ({ label, items }) => {
+const ComponentBadges: React.FC<{ label: string; items: PluginComponentItem[]; onOpenFile?: (filePath: string) => void }> = ({ label, items, onOpenFile }) => {
     const [expanded, setExpanded] = useState(false);
     if (!items || items.length === 0) return null;
     const SHOW_MAX = 3;
@@ -61,7 +62,12 @@ const ComponentBadges: React.FC<{ label: string; items: string[] }> = ({ label, 
             <span className="plugin-component-label">{label}</span>
             <div className="plugin-component-badges">
                 {shown.map((item, i) => (
-                    <span key={i} className="plugin-badge">{item}</span>
+                    <span
+                        key={i}
+                        className={`plugin-badge${item.filePath && onOpenFile ? ' plugin-badge-link' : ''}`}
+                        title={item.filePath}
+                        onClick={() => item.filePath && onOpenFile?.(item.filePath)}
+                    >{item.name}</span>
                 ))}
                 {!expanded && hiddenCount > 0 && (
                     <span className="plugin-badge-more" onClick={() => setExpanded(true)}>
@@ -84,9 +90,10 @@ const InstalledPluginCard: React.FC<{
     onEnable: (plugin: PluginInfo) => void;
     onDisable: (plugin: PluginInfo) => void;
     onUninstall: (plugin: PluginInfo) => void;
+    onOpenFile?: (filePath: string) => void;
     isUninstalling?: boolean;
     isReadonly?: boolean;
-}> = ({ plugin, onEnable, onDisable, onUninstall, isUninstalling, isReadonly }) => {
+}> = ({ plugin, onEnable, onDisable, onUninstall, onOpenFile, isUninstalling, isReadonly }) => {
     const [expanded, setExpanded] = useState(false);
     const [descExpanded, setDescExpanded] = useState(false);
     const DESC_MAX = 150;
@@ -170,9 +177,9 @@ const InstalledPluginCard: React.FC<{
                     )}
                     {hasComponents && (
                         <div className="plugin-components">
-                            <ComponentBadges label="Commands:" items={plugin.components?.commands || []} />
-                            <ComponentBadges label="Agents:" items={plugin.components?.agents || []} />
-                            <ComponentBadges label="Skills:" items={plugin.components?.skills || []} />
+                            <ComponentBadges label="Commands:" items={plugin.components?.commands || []} onOpenFile={onOpenFile} />
+                            <ComponentBadges label="Agents:" items={plugin.components?.agents || []} onOpenFile={onOpenFile} />
+                            <ComponentBadges label="Skills:" items={plugin.components?.skills || []} onOpenFile={onOpenFile} />
                         </div>
                     )}
                 </div>
@@ -720,6 +727,7 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
                                                         onEnable={handleEnable}
                                                         onDisable={handleDisable}
                                                         onUninstall={handleUninstall}
+                                                        onOpenFile={(filePath) => vscode.postMessage({ command: 'openAgentFile', filePath })}
                                                         isUninstalling={uninstallingKeys.has(`${plugin.marketplace}/${plugin.name}`)}
                                                         isReadonly={plugin.from !== 'sema'}
                                                     />

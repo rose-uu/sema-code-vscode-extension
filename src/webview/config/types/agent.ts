@@ -1,4 +1,4 @@
-export type AgentScope = 'user' | 'project' | 'builtin'
+export type AgentScope = 'user' | 'project' | 'builtin' | 'plugin'
 
 export interface AgentConfig {
   name: string
