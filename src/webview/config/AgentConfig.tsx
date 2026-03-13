@@ -12,7 +12,7 @@ interface AgentConfigProps {
 
 type AgentTabType = 'installed' | 'add';
 
-const LOCATE_ORDER: AgentScope[] = ['builtin', 'plugin', 'project', 'user'];
+const LOCATE_ORDER: AgentScope[] = ['builtin', 'project', 'user', 'plugin'];
 
 const LOCATE_SECTION_TITLES: Record<AgentScope, string> = {
     builtin: '内置 Agents',
@@ -193,7 +193,7 @@ const AgentConfig: React.FC<AgentConfigProps> = ({ vscode }) => {
 
     const handleEditAgent = (agent: AgentConfigItem) => {
         if (agent.filePath) {
-            vscode.postMessage({ command: 'openAgentFile', filePath: agent.filePath });
+            vscode.postMessage({ command: 'openFile', filePath: agent.filePath });
         }
     };
 
@@ -207,7 +207,7 @@ const AgentConfig: React.FC<AgentConfigProps> = ({ vscode }) => {
         const description = agent.description || '暂无描述';
         const isDescriptionExpanded = expandedDescriptions.has(globalIndex);
         const isLongDescription = description.length > LongDescValue;
-        const canEdit = (!agent.from || agent.from === 'sema') && agent.locate !== 'builtin';
+        const isReadonly = (agent.from && agent.from !== 'sema') || agent.locate === 'builtin' || agent.locate === 'plugin';
 
         return (
             <div key={globalIndex} className="agent-card">
@@ -217,11 +217,11 @@ const AgentConfig: React.FC<AgentConfigProps> = ({ vscode }) => {
                     </div>
                     <div className="agent-name-group">
                         <span className="agent-name">{agent.name}</span>
-                        {(agent.locate === 'builtin' || (agent.from && agent.from !== 'sema')) && (
+                        {isReadonly && (
                             <span className="readonly-tab">只读</span>
                         )}
                     </div>
-                    {canEdit && (
+                    {!isReadonly && (
                         <div className="agent-card-actions">
                             <button
                                 className="mcp-icon-btn"

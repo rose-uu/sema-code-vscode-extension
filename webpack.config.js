@@ -21,14 +21,7 @@ const extensionConfig = {
     '@vscode/ripgrep': 'commonjs @vscode/ripgrep'
   },
   resolve: {
-    extensions: ['.ts', '.js'],
-    fallback: {
-      // 确保 Node.js 内置模块正确处理
-      "fs": false,
-      "path": false,
-      "os": false,
-      "child_process": false
-    }
+    extensions: ['.ts', '.js']
   },
   node: {
     // 保持 Node.js 环境的全局变量

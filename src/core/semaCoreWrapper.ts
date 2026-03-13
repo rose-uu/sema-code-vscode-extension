@@ -38,7 +38,7 @@ import {
     MCPScopeType,
     MCPServerInfo,
     ToolInfo,
-    SkillInfo,
+    SkillConfig,
     AgentConfig,
     MAIN_AGENT_ID,
     MarketplacePluginsInfo,
@@ -927,13 +927,6 @@ export class SemaCoreWrapper {
     }
 
     /**
-     * 获取 Skill 信息列表
-     */
-    public getSkillsInfo(): SkillInfo[] {
-        return this.semaCore.getSkillsInfo();
-    }
-
-    /**
      * 获取自定义命令列表
      */
     public async getCustomCommands(): Promise<CustomCommand[]> {
@@ -1256,6 +1249,22 @@ export class SemaCoreWrapper {
      */
     public removeAgentConf(name: string): Promise<AgentConfig[]> {
         return this.semaCore.removeAgentConf(name);
+    }
+
+    // ===== skill管理相关方法 =====
+
+    /**
+     * 获取 Skills 信息列表
+     */
+    public getSkillsInfo(): Promise<SkillConfig[]> {
+        return this.semaCore.getSkillsInfo();
+    }
+
+    /**
+     * 重新加载 Skills 信息列表
+     */
+    public refreshSkillsInfo(): Promise<SkillConfig[]> {
+        return this.semaCore.refreshSkillsInfo();
     }
 
     /**

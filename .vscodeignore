@@ -30,6 +30,7 @@ tests/**
 **/*.spec.*
 
 # 其他不必要的文件
+imgs/sema.gif
 .DS_Store
 *.log
 npm-debug.log*

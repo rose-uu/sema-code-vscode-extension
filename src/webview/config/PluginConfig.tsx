@@ -106,10 +106,10 @@ const InstalledPluginCard: React.FC<{
 
     return (
         <div className="agent-card plugin-card">
-            <div className="agent-header plugin-card-header">
+            <div className="agent-header plugin-card-header" onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer' }}>
                 <button
                     className={`mcp-expand-btn ${expanded ? 'expanded' : ''}`}
-                    onClick={() => setExpanded(!expanded)}
+                    onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
                 >
                     <ExpandArrowIcon />
                 </button>
@@ -119,7 +119,7 @@ const InstalledPluginCard: React.FC<{
                     <span className="readonly-tab">只读</span>
                 )}
                 {!isReadonly && (
-                    <div className="plugin-card-actions">
+                    <div className="plugin-card-actions" onClick={(e) => e.stopPropagation()}>
                         <button
                             className={`mcp-icon-btn mcp-icon-btn-danger ${isUninstalling ? 'btn-loading' : ''}`}
                             onClick={() => onUninstall(plugin)}
@@ -321,10 +321,10 @@ const MarketplaceSection: React.FC<{
 
     return (
         <div className="agent-section plugin-marketplace-section">
-            <div className="plugin-marketplace-header">
+            <div className="plugin-marketplace-header" onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer' }}>
                 <button
                     className={`mcp-expand-btn ${expanded ? 'expanded' : ''}`}
-                    onClick={() => setExpanded(!expanded)}
+                    onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
                 >
                     <ExpandArrowIcon />
                 </button>
@@ -341,10 +341,12 @@ const MarketplaceSection: React.FC<{
                             className="plugin-marketplace-source plugin-marketplace-source-link"
                             onClick={(e) => {
                                 e.preventDefault();
+                                e.stopPropagation();
                                 onOpenExternal?.(githubUrl);
                             }}
                             href="#"
                             title={githubUrl}
+                            style={{ width: 'fit-content' }}
                         >
                             <GitHubIcon size={14} />
                             {sourceLabel}
@@ -358,7 +360,7 @@ const MarketplaceSection: React.FC<{
                     </span>
                 </div>
                 {!isReadonly && (
-                    <div className="plugin-marketplace-actions">
+                    <div className="plugin-marketplace-actions" onClick={(e) => e.stopPropagation()}>
                         {marketplace.source.source !== 'directory' && (
                             <button
                                 className={`mcp-icon-btn ${isUpdating ? 'btn-loading' : ''}`}
@@ -727,7 +729,7 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
                                                         onEnable={handleEnable}
                                                         onDisable={handleDisable}
                                                         onUninstall={handleUninstall}
-                                                        onOpenFile={(filePath) => vscode.postMessage({ command: 'openAgentFile', filePath })}
+                                                        onOpenFile={(filePath) => vscode.postMessage({ command: 'openFile', filePath })}
                                                         isUninstalling={uninstallingKeys.has(`${plugin.marketplace}/${plugin.name}`)}
                                                         isReadonly={plugin.from !== 'sema'}
                                                     />

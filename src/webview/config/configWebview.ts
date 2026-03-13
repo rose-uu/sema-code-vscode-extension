@@ -46,7 +46,6 @@ export class ConfigWebviewProvider {
                 loadSystemTools:            () => this.loadSystemTools(),
                 updateUseTools:             () => this.updateUseTools(m.tools),
                 updateMCPUseTools:          () => this.updateMCPUseTools(m.mcpName, m.tools),
-                loadSkillsInfo:             () => this.loadSkillsInfo(),
                 getModelAdapter:            () => Promise.resolve(this.getModelAdapter(m.provider, m.modelName)),
                 loadPluginConfig:           () => this.loadPluginConfig(),
                 refreshPluginConfig:        () => this.refreshPluginConfig(),
@@ -60,9 +59,11 @@ export class ConfigWebviewProvider {
                 addMarketplaceFromDirectory:() => this.addMarketplace('directory', m.dirPath),
                 loadAgentsInfo:             () => this.loadAgentsInfo(),
                 refreshAgents:              () => this.refreshAgentsInfo(),
+                loadSkillsInfo:             () => this.loadSkillsInfo(),
+                refreshSkills:              () => this.refreshSkillsInfo(),
                 addAgent:                   () => this.addAgent(m.data),
                 removeAgent:                () => this.removeAgent(m.name),
-                openAgentFile:              () => Promise.resolve(this.openAgentFile(m.filePath)),
+                openFile:              () => Promise.resolve(this.openFile(m.filePath)),
             };
             await handlers[m.command]?.();
         });
@@ -121,7 +122,7 @@ export class ConfigWebviewProvider {
         if (this.panel) this.loadConfig();
     }
 
-    // ─── Config ───────────────────────────────────────────────────────────────
+    // ─── Models ───────────────────────────────────────────────────────────────
 
     private async loadConfig() {
         if (!this.panel) return;
@@ -186,6 +187,12 @@ export class ConfigWebviewProvider {
         } catch (error) {
             this.postMessage({ command: 'modelsResult', success: false, models: [], message: `获取模型列表失败: ${(error as Error).message}` });
         }
+    }
+
+    private getModelAdapter(provider: string, modelName: string) {
+        try {
+            this.postMessage({ command: 'modelAdapterResult', adapter: this.coreManager.getModelAdapter(provider, modelName) ?? null });
+        } catch { /* 静默失败 */ }
     }
 
     private async testConnection(data: any) {
@@ -300,24 +307,6 @@ export class ConfigWebviewProvider {
             this.coreManager.updateMCPUseTools(mcpName, tools);
             this.postMessage({ command: 'updateMCPUseToolsResult', success: true, message: 'MCP 工具配置已更新' });
         });
-    }
-
-    // ─── Skills / Adapters ───────────────────────────────────────────────────
-
-    private async loadSkillsInfo() {
-        if (!this.panel) return;
-        try {
-            await this.ensureCoreReady();
-            this.postMessage({ command: 'loadSkillsInfoResult', success: true, data: this.coreManager.getSkillsInfo() });
-        } catch (error) {
-            this.postMessage({ command: 'loadSkillsInfoResult', success: false, data: [], message: (error as Error).message });
-        }
-    }
-
-    private getModelAdapter(provider: string, modelName: string) {
-        try {
-            this.postMessage({ command: 'modelAdapterResult', adapter: this.coreManager.getModelAdapter(provider, modelName) ?? null });
-        } catch { /* 静默失败 */ }
     }
 
     // ─── Plugins / Marketplace ───────────────────────────────────────────────
@@ -441,7 +430,33 @@ export class ConfigWebviewProvider {
         });
     }
 
-    private openAgentFile(filePath: string) {
+    // ─── Skills ───────────────────────────────────────────────────────────────
+
+    private async loadSkillsInfo() {
+        if (!this.panel) return;
+        try {
+            await this.ensureCoreReady();
+            const skillsInfo = await this.coreManager.getSkillsInfo();
+            // console.log('[loadSkillsInfo] data:', skillsInfo);
+            this.postMessage({ command: 'loadSkillsInfoResult', success: true, data: skillsInfo });
+        } catch (error) {
+            this.postMessage({ command: 'loadSkillsInfoResult', success: false, data: [], message: (error as Error).message });
+        }
+    }
+
+    private async refreshSkillsInfo() {
+        if (!this.panel) return;
+        try {
+            await this.ensureCoreReady();
+            this.postMessage({ command: 'refreshSkillsInfoResult', success: true, data: await this.coreManager.refreshSkillsInfo() });
+        } catch (error) {
+            this.postMessage({ command: 'refreshSkillsInfoResult', success: false, data: [], message: (error as Error).message });
+        }
+    }
+
+    // ─── Utils ────────────────────────────────────────────────────────────────
+
+    private openFile(filePath: string) {
         if (!filePath) return;
         vscode.workspace.openTextDocument(filePath).then(
             doc => vscode.window.showTextDocument(doc),
