@@ -65,7 +65,7 @@ export const useShortcutPanel = (
         setShowShortcutPanel(false);
 
         // 将命令文本放入，格式为 "/命令 "（命令后加一个空格）
-        const newInputValue = `/${text} `;
+        const newInputValue = `/${text}  `;
         setInputValue(newInputValue);
 
         // 如果 send 为 true，直接发送

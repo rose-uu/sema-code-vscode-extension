@@ -317,9 +317,7 @@
     position: absolute;
     bottom: 100%;
     left: 0;
-    right: 0;
     width: 100%;
-    max-width: 400px;
     margin-bottom: 8px;
     background: var(--vscode-sideBar-background);
     border: 1px solid var(--vscode-dropdown-border);

@@ -18,7 +18,6 @@ const ShortcutPanel: React.FC<ShortcutPanelProps> = ({
     onExecuteShortcut,
     shortcutPanelRef
 }) => {
-    // ⚠️ 所有 hooks 必须在条件判断之前调用（React Hooks 规则）
     const selectedItemRef = useRef<HTMLDivElement>(null);
 
     const filteredCommands = useMemo(() => {
@@ -39,7 +38,6 @@ const ShortcutPanel: React.FC<ShortcutPanelProps> = ({
         }
     }, [safeSelectedIndex]);
 
-    // ✅ 现在可以进行条件判断和早期返回了
     if (!show) return null;
 
     // 如果没有匹配的命令，不显示面板
@@ -52,7 +50,7 @@ const ShortcutPanel: React.FC<ShortcutPanelProps> = ({
                     key={index}
                     ref={index === safeSelectedIndex ? selectedItemRef : null}
                     className={`shortcut-panel-item ${index === safeSelectedIndex ? 'selected' : ''}`}
-                    onClick={() => onExecuteShortcut(item.text, item.send)}
+                    onClick={() => onExecuteShortcut(item.text, item.send ?? false)}
                 >
                     <span className="shortcut-slash">/</span>
                     <span className="shortcut-command">{item.text}</span>
