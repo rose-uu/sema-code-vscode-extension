@@ -1,5 +1,12 @@
 import * as vscode from 'vscode';
+import * as https from 'https';
+import * as http from 'http';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import { exec } from 'child_process';
 import { defaultConfig } from './default/defaultConfig';
+import { skillHubConfig } from './default/defaultSkillHub';
 import { AgentConfig } from './types/agent';
 import { CommandConfig } from './types/command';
 
@@ -65,6 +72,8 @@ export class ConfigWebviewProvider {
                 loadSkillsInfo:             () => this.loadSkillsInfo(),
                 refreshSkills:              () => this.refreshSkillsInfo(),
                 removeSkill:                () => this.removeSkill(m.name),
+                searchSkillHub:             () => this.searchSkillHub(m.query),
+                installSkillFromHub:        () => this.installSkillFromHub(m.slug, m.scope),
                 loadCommandsInfo:           () => this.loadCommandsInfo(),
                 refreshCommandsInfo:        () => this.refreshCommandsInfo(),
                 addCommand:                 () => this.addCommand(m.data),
@@ -466,6 +475,103 @@ export class ConfigWebviewProvider {
             await this.coreManager.removeSkillConf(name);
             this.postMessage({ command: 'removeSkillResult', success: true, message: 'Skill 已删除' });
             this.loadSkillsInfo();
+        });
+    }
+
+    private async searchSkillHub(query: string) {
+        if (!this.panel) return;
+        try {
+            const data = await this.httpsGet(skillHubConfig.searchUrl(query));
+            const json = JSON.parse(data);
+            this.postMessage({ command: 'searchSkillHubResult', success: true, data: json.results || [] });
+        } catch (error) {
+            this.postMessage({ command: 'searchSkillHubResult', success: false, data: [], message: (error as Error).message });
+        }
+    }
+
+    private async installSkillFromHub(slug: string, scope: 'project' | 'user') {
+        if (!this.panel) return;
+        try {
+            // 确定安装目录（绝对路径）
+            let skillsDir: string;
+            if (scope === 'project') {
+                const wsFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+                if (!wsFolder) throw new Error('未打开项目，无法执行项目安装');
+                skillsDir = path.join(wsFolder, '.sema', 'skills');
+            } else {
+                skillsDir = path.join(os.homedir(), '.sema', 'skills');
+            }
+
+            // 确保目录存在
+            fs.mkdirSync(skillsDir, { recursive: true });
+
+            // 下载 zip 到系统临时目录（避免工作目录问题）
+            const zipPath = path.join(os.tmpdir(), `sema-skill-${slug}-${Date.now()}.zip`);
+            await this.downloadFile(skillHubConfig.downloadUrl(slug), zipPath);
+
+            // zip 根目录直接是文件，解压到 skillsDir/<slug>/ 下
+            const destSkillDir = path.join(skillsDir, slug);
+            fs.mkdirSync(destSkillDir, { recursive: true });
+            await new Promise<void>((resolve, reject) => {
+                exec(`unzip -o "${zipPath}" -d "${destSkillDir}"`, (err) => {
+                    if (err) reject(err); else resolve();
+                });
+            });
+
+            // 删除 zip
+            fs.unlinkSync(zipPath);
+
+            // 刷新 skill 信息
+            await this.ensureCoreReady();
+            const skills = await this.coreManager.refreshSkillsInfo();
+            this.postMessage({ command: 'installSkillFromHubResult', success: true, slug, data: skills });
+        } catch (error) {
+            this.postMessage({ command: 'installSkillFromHubResult', success: false, slug, message: (error as Error).message });
+            vscode.window.showErrorMessage(`安装 Skill "${slug}" 失败: ${(error as Error).message}`);
+        }
+    }
+
+    /** 发起 HTTPS GET 请求，返回响应体字符串，自动跟随重定向 */
+    private httpsGet(url: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const get = (targetUrl: string) => {
+                const mod = targetUrl.startsWith('https') ? https : http;
+                (mod as typeof https).get(targetUrl, { headers: { 'User-Agent': 'sema-vscode' } }, (res) => {
+                    if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                        get(res.headers.location);
+                        return;
+                    }
+                    let body = '';
+                    res.on('data', (chunk) => { body += chunk; });
+                    res.on('end', () => resolve(body));
+                    res.on('error', reject);
+                }).on('error', reject);
+            };
+            get(url);
+        });
+    }
+
+    /** 下载文件到指定绝对路径，自动跟随重定向 */
+    private downloadFile(url: string, destPath: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const get = (targetUrl: string) => {
+                const mod = targetUrl.startsWith('https') ? https : http;
+                (mod as typeof https).get(targetUrl, { headers: { 'User-Agent': 'sema-vscode' } }, (res) => {
+                    if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                        get(res.headers.location);
+                        return;
+                    }
+                    if (res.statusCode !== 200) {
+                        reject(new Error(`下载失败，状态码: ${res.statusCode}`));
+                        return;
+                    }
+                    const file = fs.createWriteStream(destPath);
+                    res.pipe(file);
+                    file.on('finish', () => file.close(() => resolve()));
+                    file.on('error', (err) => { fs.unlink(destPath, () => {}); reject(err); });
+                }).on('error', reject);
+            };
+            get(url);
         });
     }
 

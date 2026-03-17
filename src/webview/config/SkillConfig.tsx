@@ -9,6 +9,15 @@ interface SkillConfigProps {
     vscode: VscodeApi;
 }
 
+interface HubSkillResult {
+    displayName: string;
+    score: number;
+    slug: string;
+    summary: string;
+    updatedAt: number;
+    version: string;
+}
+
 const LOCATE_ORDER: SkillScope[] = ['project', 'user', 'plugin'];
 
 const LOCATE_SECTION_TITLES: Record<SkillScope, string> = {
@@ -32,6 +41,13 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(new Set());
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+
+    // Hub 状态
+    const [hubSearch, setHubSearch] = useState('');
+    const [hubResults, setHubResults] = useState<HubSkillResult[]>([]);
+    const [hubLoading, setHubLoading] = useState(false);
+    const [hubSearched, setHubSearched] = useState(false);
+    const [installingHubKeys, setInstallingHubKeys] = useState<Set<string>>(new Set());
 
     const groupedSkills = useMemo(() => {
         const groups: Record<SkillScope | 'other', SkillConfigItem[]> = {
@@ -74,6 +90,28 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
                         vscode.postMessage({ command: 'loadSkillsInfo' });
                     }
                     break;
+                case 'searchSkillHubResult':
+                    setHubLoading(false);
+                    setHubSearched(true);
+                    if (message.success) {
+                        setHubResults(message.data || []);
+                    } else {
+                        setHubResults([]);
+                    }
+                    break;
+                case 'installSkillFromHubResult':
+                    setInstallingHubKeys(prev => {
+                        const next = new Set(prev);
+                        if (message.slug) {
+                            next.delete(`${message.slug}-project`);
+                            next.delete(`${message.slug}-user`);
+                        }
+                        return next;
+                    });
+                    if (message.success) {
+                        vscode.postMessage({ command: 'loadSkillsInfo' });
+                    }
+                    break;
             }
         };
 
@@ -89,6 +127,47 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
         setIsRefreshing(true);
         vscode.postMessage({ command: 'refreshSkills' });
     };
+
+    const handleHubSearchChange = (value: string) => {
+        setHubSearch(value);
+        if (!value.trim()) {
+            setHubResults([]);
+            setHubSearched(false);
+            setHubLoading(false);
+        }
+    };
+
+    const handleHubSearchSubmit = () => {
+        if (!hubSearch.trim()) {
+            setHubResults([]);
+            setHubSearched(false);
+            setHubLoading(false);
+            return;
+        }
+        setHubLoading(true);
+        vscode.postMessage({ command: 'searchSkillHub', query: hubSearch.trim() });
+    };
+
+    const handleInstallFromHub = (slug: string, scope: 'project' | 'user') => {
+        setInstallingHubKeys(prev => new Set(prev).add(`${slug}-${scope}`));
+        vscode.postMessage({ command: 'installSkillFromHub', slug, scope });
+    };
+
+    const installedSlugs = useMemo(() => {
+        const slugs = new Set<string>();
+        skills.forEach(s => {
+            slugs.add(s.name);
+            if (s.filePath) {
+                // filePath 形如 /xxx/.sema/skills/pptx-2/SKILL.md，提取目录名作为 slug
+                const parts = s.filePath.replace(/\\/g, '/').split('/');
+                const skillMdIndex = parts.findIndex(p => p.toUpperCase() === 'SKILL.MD');
+                if (skillMdIndex > 0) {
+                    slugs.add(parts[skillMdIndex - 1]);
+                }
+            }
+        });
+        return slugs;
+    }, [skills]);
 
     const toggleDescriptionExpand = (index: number) => {
         setExpandedDescriptions(prev => {
@@ -223,10 +302,95 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
 
             {/* 内容 */}
             <div className="tab-content">
-                <div style={{ display: activeTab === 'hub' ? 'block' : 'none' }}>
-                    <div className="section-empty" style={{ textAlign: 'center', padding: '48px 0', color: 'var(--vscode-descriptionForeground)' }}>
-                        敬请期待
+                <div style={{ display: activeTab === 'hub' ? 'flex' : 'none', flexDirection: 'column', gap: '12px' }}>
+                    <div className="mcp-search-box" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            className="mcp-search-input"
+                            placeholder="搜索 Skill 名称或描述..."
+                            value={hubSearch}
+                            onChange={(e) => handleHubSearchChange(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleHubSearchSubmit(); }}
+                            style={{ flex: 1 }}
+                        />
+                        <button
+                            className={`mcp-btn primary small ${hubLoading ? 'btn-loading' : ''}`}
+                            onClick={handleHubSearchSubmit}
+                            disabled={hubLoading}
+                        >
+                            {hubLoading && <span className="spinner" />}
+                            {hubLoading ? '搜索中' : '搜索'}
+                        </button>
                     </div>
+                    {hubLoading ? (
+                        <div className="agent-loading">搜索中...</div>
+                    ) : !hubSearched ? (
+                        <div className="section-empty">输入关键词搜索 SkillHub</div>
+                    ) : hubResults.length === 0 ? (
+                        <div className="section-empty">没有匹配的 Skill</div>
+                    ) : (
+                        <div className="plugin-available-list" style={{ borderRadius: '8px', border: '1px solid var(--vscode-panel-border)' }}>
+                            {[...hubResults]
+                                .sort((a, b) => {
+                                    const aInstalled = installedSlugs.has(a.slug) ? 1 : 0;
+                                    const bInstalled = installedSlugs.has(b.slug) ? 1 : 0;
+                                    if (bInstalled !== aInstalled) return bInstalled - aInstalled;
+                                    return b.score - a.score;
+                                })
+                                .map((item) => {
+                                const isInstalled = installedSlugs.has(item.slug);
+                                const isInstallingProject = installingHubKeys.has(`${item.slug}-project`);
+                                const isInstallingUser = installingHubKeys.has(`${item.slug}-user`);
+                                return (
+                                    <div key={item.slug} className="plugin-available-card">
+                                        <div className="plugin-available-left">
+                                            <div
+                                                className="agent-icon"
+                                                style={{ backgroundColor: getColorByName(item.slug), borderRadius: '50%', flexShrink: 0 }}
+                                            >
+                                                {item.displayName.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="plugin-available-info">
+                                                <span className="plugin-available-name">{item.displayName}</span>
+                                                {item.version && (
+                                                    <span className="plugin-available-author">v{item.version}</span>
+                                                )}
+                                                {item.summary && (
+                                                    <span className="plugin-available-desc" title={item.summary}>{item.summary}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="plugin-available-right">
+                                            {isInstalled ? (
+                                                <span className="mcp-installed-badge">已安装</span>
+                                            ) : (
+                                                <div className="mcp-install-btns">
+                                                    <button
+                                                        className={`mcp-btn secondary small ${isInstallingProject ? 'btn-loading' : ''}`}
+                                                        onClick={() => handleInstallFromHub(item.slug, 'project')}
+                                                        title="安装到当前项目"
+                                                        disabled={isInstallingProject || isInstallingUser}
+                                                    >
+                                                        {isInstallingProject && <span className="spinner" />}
+                                                        项目安装
+                                                    </button>
+                                                    <button
+                                                        className={`mcp-btn primary small ${isInstallingUser ? 'btn-loading' : ''}`}
+                                                        onClick={() => handleInstallFromHub(item.slug, 'user')}
+                                                        title="安装到用户全局"
+                                                        disabled={isInstallingProject || isInstallingUser}
+                                                    >
+                                                        {isInstallingUser && <span className="spinner" />}
+                                                        全局安装
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
                 {activeTab !== 'hub' && loading ? (
                     <div className="agent-loading">加载中...</div>

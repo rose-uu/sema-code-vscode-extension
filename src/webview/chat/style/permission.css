@@ -292,6 +292,8 @@ body.vscode-light .bash-permission-content {
     line-height: 1.6;
     white-space: pre-wrap;
     word-wrap: break-word;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 /* ==================== 问答对话框样式 ==================== */
