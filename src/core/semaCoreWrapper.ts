@@ -38,25 +38,13 @@ import {
     MCPScopeType,
     MCPServerInfo,
     ToolInfo,
-    SkillConfig,
-    AgentConfig,
     MAIN_AGENT_ID,
     MarketplacePluginsInfo,
-    PluginScope
+    PluginScope,
+    AgentConfig,
+    SkillConfig,
+    CommandConfig
 } from 'sema-core/types';
-
-/**
- * 自定义命令对象（对应 sema-core 的 CustomCommand 类型）
- */
-export interface CustomCommand {
-    name: string;
-    displayName: string;
-    description: string;
-    argumentHint?: string;
-    filePath: string;
-    scope: 'user' | 'project';
-    content: string;
-}
 
 import { SystemConfigManager } from '../managers/SystemConfigManager';
 
@@ -541,13 +529,6 @@ export class SemaCoreWrapper {
 
         // 监听模型压缩事件
         this.semaCore.on<CompactExecData>('compact:exec', (data) => {
-            const formatTokens = (tokens: number) => {
-                if (tokens >= 1000) {
-                    return `${(tokens / 1000).toFixed(1)}k`;
-                }
-                return tokens.toString();
-            };
-
             // console.log('Compact exec:', data);
 
             let finalContent = '';
@@ -557,8 +538,7 @@ export class SemaCoreWrapper {
                 // 如果有错误信息，使用错误信息作为内容
                 finalContent = `Compacted: ${data.errMsg}`;
             } else {
-                // 正常情况：显示压缩信息
-                finalContent = `Compacted: done`;
+                finalContent = `Compacted`;
             }
 
             this.messageHistory.push({
@@ -587,7 +567,7 @@ export class SemaCoreWrapper {
                 type: 'system',
                 content: {
                     'type': 'clear',
-                    'content': 'Session: cleared'
+                    'content': '(no content)'
                 },
                 timestamp: Date.now()
             });
@@ -926,20 +906,6 @@ export class SemaCoreWrapper {
         return this.semaCore.getModelAdapter(provider, modelName);
     }
 
-    /**
-     * 获取自定义命令列表
-     */
-    public async getCustomCommands(): Promise<CustomCommand[]> {
-        return await this.semaCore.getCustomCommands();
-    }
-
-    /**
-     * 重新加载自定义命令
-     */
-    public reloadCustomCommands(): void {
-        this.semaCore.reloadCustomCommands();
-    }
-
     // ===== 工具管理相关方法 =====
 
     /**
@@ -1266,6 +1232,44 @@ export class SemaCoreWrapper {
     public refreshSkillsInfo(): Promise<SkillConfig[]> {
         return this.semaCore.refreshSkillsInfo();
     }
+
+    /**
+     * 移除 Skills 
+     */
+    public removeSkillConf(name: string): Promise<SkillConfig[]> {
+        return this.semaCore.removeSkillConf(name);
+    }
+
+    // ===== command管理相关方法 =====
+
+    /**
+     * 获取 Commands 信息列表
+     */
+    public getCommandsInfo(): Promise<CommandConfig[]> {
+        return this.semaCore.getCommandsInfo();
+    }
+
+    /**
+     * 重新加载 Commands 信息列表
+     */
+    public refreshCommandsInfo(): Promise<CommandConfig[]> {
+        return this.semaCore.refreshCommandsInfo();
+    }
+
+    /**
+     * 添加 Commands 
+     */
+    public addCommandConf(commandConf: CommandConfig): Promise<CommandConfig[]> {
+        return this.semaCore.addCommandConf(commandConf);
+    }
+
+    /**
+     * 移除 Commands 
+     */
+    public removeCommandConf(name: string): Promise<CommandConfig[]> {
+        return this.semaCore.removeCommandConf(name);
+    }
+
 
     /**
      * 销毁wrapper实例

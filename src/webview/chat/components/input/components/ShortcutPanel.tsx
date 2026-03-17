@@ -1,8 +1,9 @@
 import React, { useMemo, useEffect, useRef } from 'react';
-import { getFilteredShortcutCommands } from '../utils/commandUtils';
+import { ShortcutCommand } from '../../../../../core/util/command';
 
 interface ShortcutPanelProps {
     show: boolean;
+    commands: ShortcutCommand[];
     searchQuery?: string;
     selectedIndex?: number;
     onExecuteShortcut: (text: string, send: boolean) => void;
@@ -11,6 +12,7 @@ interface ShortcutPanelProps {
 
 const ShortcutPanel: React.FC<ShortcutPanelProps> = ({
     show,
+    commands,
     searchQuery = '',
     selectedIndex = 0,
     onExecuteShortcut,
@@ -19,11 +21,10 @@ const ShortcutPanel: React.FC<ShortcutPanelProps> = ({
     // ⚠️ 所有 hooks 必须在条件判断之前调用（React Hooks 规则）
     const selectedItemRef = useRef<HTMLDivElement>(null);
 
-    // 根据搜索查询过滤命令（使用缓存的命令列表）
     const filteredCommands = useMemo(() => {
-        const commands = getFilteredShortcutCommands(searchQuery);
-        return commands;
-    }, [searchQuery]);
+        if (!searchQuery) return commands;
+        return commands.filter(cmd => cmd.text.toLowerCase().startsWith(searchQuery.toLowerCase()));
+    }, [commands, searchQuery]);
 
     // 确保 selectedIndex 在有效范围内
     const safeSelectedIndex = Math.max(0, Math.min(selectedIndex, filteredCommands.length - 1));

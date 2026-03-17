@@ -1,52 +1,43 @@
-import { getAllShortcutCommands } from '../../../../../core/command'
+import { BUILTIN_SHORTCUT_COMMANDS, ShortcutCommand } from '../../../../../core/util/command';
+import { CommandConfig } from '../../../../config/types/command';
 
-// 缓存命令列表，避免频繁调用
-let cachedHighlightCommands: string[] | null = null;
-let cachedAllCommands: ReturnType<typeof getAllShortcutCommands> | null = null;
+// 存储自定义命令（由后端推送更新）
+let customCommands: ShortcutCommand[] = [];
 
 /**
- * 清空缓存（当自定义命令更新时调用）
+ * 由后端推送自定义命令时调用，更新自定义命令列表
  */
-export const clearCommandCache = () => {
-    cachedHighlightCommands = null;
-    cachedAllCommands = null;
+export const setCustomCommands = (commands: CommandConfig[]) => {
+    customCommands = commands.map(cmd => ({
+        text: cmd.name,
+        desc: cmd.description,
+        isCustom: true
+    }));
 };
 
 /**
- * 获取所有需要高亮的命令列表（带缓存）
+ * 获取所有命令（内置 + 自定义）
+ */
+const getAllCommands = (): ShortcutCommand[] => {
+    return [...BUILTIN_SHORTCUT_COMMANDS.map(cmd => ({ send: false, ...cmd })), ...customCommands];
+};
+
+/**
+ * 获取所有需要高亮的命令列表
  */
 export const getHighlightCommands = () => {
-    if (cachedHighlightCommands === null) {
-        cachedHighlightCommands = getAllShortcutCommands().map(command => '/' + command.text);
-    }
-    return cachedHighlightCommands;
-};
-
-/**
- * 获取所有命令（带缓存）
- */
-const getCachedAllCommands = () => {
-    if (cachedAllCommands === null) {
-        cachedAllCommands = getAllShortcutCommands();
-    }
-    return cachedAllCommands;
+    return getAllCommands().map(command => '/' + command.text);
 };
 
 /**
  * 检查文本是否包含高亮命令
  */
 export const getHighlightedCommand = (text: string) => {
-    // 去掉首尾空格进行匹配
     const trimmedText = text.trim();
-
-    // 获取当前的命令列表（动态）
     const highlightCommands = getHighlightCommands();
-
-    // 找到匹配的命令
     const matchedCommand = highlightCommands.find(cmd => trimmedText.startsWith(cmd));
 
     if (matchedCommand) {
-        // 在原始文本中找到命令的实际位置
         const startPos = text.indexOf(matchedCommand);
         const endPos = startPos + matchedCommand.length;
 
@@ -65,21 +56,19 @@ export const getHighlightedCommand = (text: string) => {
  */
 export const isExactCommandMatch = (text: string): boolean => {
     const trimmedText = text.trim();
-    const highlightCommands = getHighlightCommands();
-    return highlightCommands.includes(trimmedText);
+    return getHighlightCommands().includes(trimmedText);
 };
 
 /**
- * 根据搜索查询过滤快捷命令（使用缓存）
+ * 根据搜索查询过滤快捷命令
  */
 export const getFilteredShortcutCommands = (searchQuery: string) => {
-    const allCommands = getCachedAllCommands();
+    const allCommands = getAllCommands();
 
     if (!searchQuery) {
         return allCommands;
     }
 
-    // 过滤出以搜索查询开头的命令
     return allCommands.filter(cmd =>
         cmd.text.toLowerCase().startsWith(searchQuery.toLowerCase())
     );

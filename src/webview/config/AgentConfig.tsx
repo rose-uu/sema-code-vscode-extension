@@ -328,7 +328,14 @@ const AgentConfig: React.FC<AgentConfigProps> = ({ vscode }) => {
 
             {/* Tab 内容 */}
             <div className="tab-content">
-                {activeTab === 'installed' ? (
+                <div style={{ display: activeTab === 'add' ? 'block' : 'none' }}>
+                    <AddAgentForm
+                        vscode={vscode}
+                        onSuccess={handleCreateSuccess}
+                        onClose={() => setActiveTab('installed')}
+                    />
+                </div>
+                {activeTab === 'installed' && (
                     <div className="agent-sections">
                         {ALL_SECTIONS.map(scope => {
                             const sectionAgents = groupedAgents[scope] || [];
@@ -363,12 +370,6 @@ const AgentConfig: React.FC<AgentConfigProps> = ({ vscode }) => {
                             );
                         })}
                     </div>
-                ) : (
-                    <AddAgentForm
-                        vscode={vscode}
-                        onSuccess={handleCreateSuccess}
-                        onClose={() => setActiveTab('installed')}
-                    />
                 )}
             </div>
         </div>

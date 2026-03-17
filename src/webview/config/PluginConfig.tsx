@@ -498,6 +498,7 @@ const PluginConfig: React.FC<PluginConfigProps> = ({ vscode }) => {
         const groups: Record<string, PluginInfo[]> = { project: [], user: [], local: [], other: [] };
         data.plugins.forEach(p => {
             if (p.from !== 'sema') {
+                if (!p.status) return;
                 groups.other.push(p);
             } else if (groups[p.scope]) {
                 groups[p.scope].push(p);

@@ -2,83 +2,83 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { VscodeApi } from './types';
 import { getColorByName } from './utils/iconUtils';
 import { RefreshIcon, EditIcon, TrashIcon } from './utils/svgIcons';
-import { SkillScope, SkillConfig as SkillConfigItem } from './types/skill';
+import AddCommandForm from './AddCommandForm';
+import { CommandScope, CommandConfig as CommandConfigItem } from './types/command';
 import './style/agent.css';
 
-interface SkillConfigProps {
+interface CommandConfigProps {
     vscode: VscodeApi;
 }
 
-const LOCATE_ORDER: SkillScope[] = ['project', 'user', 'plugin'];
+type CommandTabType = 'installed' | 'add';
 
-const LOCATE_SECTION_TITLES: Record<SkillScope, string> = {
-    plugin: '插件 Skills',
-    project: '项目级 Skills',
-    user: '用户级 Skills',
+const LOCATE_ORDER: CommandScope[] = ['project', 'user', 'plugin'];
+
+const LOCATE_SECTION_TITLES: Record<CommandScope, string> = {
+    plugin: '插件 Commands',
+    project: '项目级 Commands',
+    user: '用户级 Commands',
 };
 
-const LOCATE_PATHS: Record<SkillScope, string> = {
+const LOCATE_PATHS: Record<CommandScope, string> = {
     plugin: '',
-    project: '.sema/skills/',
-    user: '~/.sema/skills/',
+    project: '.sema/commands/',
+    user: '~/.sema/commands/',
 };
 
-type SkillTabType = 'installed' | 'hub';
-
-const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
-    const [activeTab, setActiveTab] = useState<SkillTabType>('installed');
-    const [skills, setSkills] = useState<SkillConfigItem[]>([]);
+const CommandConfig: React.FC<CommandConfigProps> = ({ vscode }) => {
+    const [activeTab, setActiveTab] = useState<CommandTabType>('installed');
+    const [commands, setCommands] = useState<CommandConfigItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(new Set());
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
-    const groupedSkills = useMemo(() => {
-        const groups: Record<SkillScope | 'other', SkillConfigItem[]> = {
+    const groupedCommands = useMemo(() => {
+        const groups: Record<CommandScope | 'other', CommandConfigItem[]> = {
             plugin: [],
             project: [],
             user: [],
             other: [],
         };
-        skills.forEach(skill => {
-            const loc = skill.locate;
-            if (skill.from && skill.from !== 'sema') {
-                groups.other.push(skill);
-            } else if (loc && groups[loc]) {
-                groups[loc].push(skill);
+        commands.forEach(cmd => {
+            if (cmd.from && cmd.from !== 'sema') {
+                groups.other.push(cmd);
+            } else if (cmd.locate && groups[cmd.locate]) {
+                groups[cmd.locate].push(cmd);
             } else {
-                groups.other.push(skill);
+                groups.other.push(cmd);
             }
         });
         return groups;
-    }, [skills]);
+    }, [commands]);
 
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
             const message = event.data;
             switch (message.command) {
-                case 'loadSkillsInfoResult':
+                case 'loadCommandsInfoResult':
                     if (message.success) {
-                        setSkills(message.data || []);
+                        setCommands(message.data || []);
                     }
                     setLoading(false);
                     break;
-                case 'refreshSkillsInfoResult':
+                case 'refreshCommandsInfoResult':
                     setIsRefreshing(false);
                     if (message.success) {
-                        setSkills(message.data || []);
+                        setCommands(message.data || []);
                     }
                     break;
-                case 'removeSkillResult':
+                case 'removeCommandResult':
                     if (message.success) {
-                        vscode.postMessage({ command: 'loadSkillsInfo' });
+                        vscode.postMessage({ command: 'loadCommandsInfo' });
                     }
                     break;
             }
         };
 
         window.addEventListener('message', handleMessage);
-        vscode.postMessage({ command: 'loadSkillsInfo' });
+        vscode.postMessage({ command: 'loadCommandsInfo' });
 
         return () => {
             window.removeEventListener('message', handleMessage);
@@ -87,7 +87,7 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
 
     const handleRefresh = () => {
         setIsRefreshing(true);
-        vscode.postMessage({ command: 'refreshSkills' });
+        vscode.postMessage({ command: 'refreshCommandsInfo' });
     };
 
     const toggleDescriptionExpand = (index: number) => {
@@ -98,53 +98,55 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
         });
     };
 
-    const getSkillInitial = (name: string): string => {
+    const getCommandInitial = (name: string): string => {
         if (!name) return '?';
         return name.charAt(0).toUpperCase();
     };
 
-    const handleEditSkill = (skill: SkillConfigItem) => {
-        if (skill.filePath) {
-            vscode.postMessage({ command: 'openFile', filePath: skill.filePath });
+    const handleEditCommand = (cmd: CommandConfigItem) => {
+        if (cmd.filePath) {
+            vscode.postMessage({ command: 'openFile', filePath: cmd.filePath });
         }
     };
 
-    const handleDeleteSkill = (skill: SkillConfigItem) => {
-        vscode.postMessage({ command: 'removeSkill', name: skill.name });
+    const handleDeleteCommand = (cmd: CommandConfigItem) => {
+        vscode.postMessage({ command: 'removeCommand', name: cmd.name });
     };
 
-    const renderSkillCard = (skill: SkillConfigItem, globalIndex: number) => {
+    const renderCommandCard = (cmd: CommandConfigItem, globalIndex: number) => {
         const DESC_MAX = 150;
-        const description = skill.description || '暂无描述';
+        const description = cmd.description || '暂无描述';
         const isDescExpanded = expandedDescriptions.has(globalIndex);
         const isLongDesc = description.length > DESC_MAX;
-        const isReadonly = (skill.from && skill.from !== 'sema') || skill.locate === 'plugin';
+        const isReadonly = (cmd.from && cmd.from !== 'sema') || cmd.locate === 'plugin';
 
         return (
             <div key={globalIndex} className="agent-card">
                 <div className="agent-header">
-                    <div className="agent-icon" style={{ backgroundColor: getColorByName(skill.name) }}>
-                        {getSkillInitial(skill.name)}
+                    <div className="agent-icon" style={{ backgroundColor: getColorByName(cmd.name) }}>
+                        {getCommandInitial(cmd.name)}
                     </div>
                     <div className="agent-name-group">
-                        <span className="agent-name">{skill.name}</span>
+                        <span className="agent-name">/{cmd.name}</span>
                         {isReadonly && (
                             <span className="readonly-tab">只读</span>
                         )}
                     </div>
                     {!isReadonly && (
                         <div className="agent-card-actions">
-                            <button
-                                className="mcp-icon-btn"
-                                title="编辑"
-                                onClick={(e) => { e.stopPropagation(); handleEditSkill(skill); }}
-                            >
-                                <EditIcon />
-                            </button>
+                            {cmd.filePath && (
+                                <button
+                                    className="mcp-icon-btn"
+                                    title="编辑"
+                                    onClick={(e) => { e.stopPropagation(); handleEditCommand(cmd); }}
+                                >
+                                    <EditIcon />
+                                </button>
+                            )}
                             <button
                                 className="mcp-icon-btn mcp-icon-btn-danger"
                                 title="删除"
-                                onClick={(e) => { e.stopPropagation(); handleDeleteSkill(skill); }}
+                                onClick={(e) => { e.stopPropagation(); handleDeleteCommand(cmd); }}
                             >
                                 <TrashIcon />
                             </button>
@@ -165,23 +167,39 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
                         </span>
                     )}
                 </div>
+                {cmd.argumentHint && (
+                    <div className="agent-description">
+                        <span className="tools-label">参数提示:</span>{' '}
+                        {Array.isArray(cmd.argumentHint)
+                            ? cmd.argumentHint.map((hint, i) => (
+                                <span key={i} className="model-badge model-default" style={{ marginRight: 4 }}>{hint}</span>
+                            ))
+                            : <span className="model-badge model-default">{cmd.argumentHint}</span>
+                        }
+                    </div>
+                )}
             </div>
         );
     };
 
-    const getGlobalIndex = (locate: SkillScope | 'other', localIndex: number): number => {
+    const getGlobalIndex = (locate: CommandScope | 'other', localIndex: number): number => {
         let offset = 0;
         for (const loc of [...LOCATE_ORDER, 'other' as const]) {
             if (loc === locate) break;
-            offset += groupedSkills[loc].length;
+            offset += groupedCommands[loc].length;
         }
         return offset + localIndex;
     };
 
-    const ALL_SECTIONS: Array<SkillScope | 'other'> = [...LOCATE_ORDER, 'other'];
-    const SECTION_TITLES: Record<SkillScope | 'other', string> = {
+    const handleCreateSuccess = () => {
+        vscode.postMessage({ command: 'loadCommandsInfo' });
+        setActiveTab('installed');
+    };
+
+    const ALL_SECTIONS: Array<CommandScope | 'other'> = [...LOCATE_ORDER, 'other'];
+    const SECTION_TITLES: Record<CommandScope | 'other', string> = {
         ...LOCATE_SECTION_TITLES,
-        other: '外部 Skills',
+        other: '外部 Commands',
     };
 
     return (
@@ -193,22 +211,22 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
                     onClick={() => setActiveTab('installed')}
                 >
                     已安装
-                    {skills.length > 0 && (
-                        <span className="plugin-tab-count">{skills.length}</span>
+                    {commands.length > 0 && (
+                        <span className="plugin-tab-count">{commands.length}</span>
                     )}
                 </div>
                 <div
-                    className={`tab-item ${activeTab === 'hub' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('hub')}
+                    className={`tab-item ${activeTab === 'add' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('add')}
                 >
-                    SkillHub
+                    创建 Command
                 </div>
                 <div className="plugin-tab-actions">
                     {activeTab === 'installed' && (
                         <button
                             className={`mcp-icon-btn ${isRefreshing ? 'btn-loading' : ''}`}
                             onClick={handleRefresh}
-                            title="刷新 Skills"
+                            title="刷新 Commands"
                             disabled={isRefreshing}
                         >
                             {isRefreshing ? (
@@ -221,20 +239,22 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
                 </div>
             </div>
 
-            {/* 内容 */}
+            {/* Tab 内容 */}
             <div className="tab-content">
-                <div style={{ display: activeTab === 'hub' ? 'block' : 'none' }}>
-                    <div className="section-empty" style={{ textAlign: 'center', padding: '48px 0', color: 'var(--vscode-descriptionForeground)' }}>
-                        敬请期待
-                    </div>
+                <div style={{ display: activeTab === 'add' ? 'block' : 'none' }}>
+                    <AddCommandForm
+                        vscode={vscode}
+                        onSuccess={handleCreateSuccess}
+                        onClose={() => setActiveTab('installed')}
+                    />
                 </div>
-                {activeTab !== 'hub' && loading ? (
+                {activeTab !== 'add' && loading ? (
                     <div className="agent-loading">加载中...</div>
-                ) : activeTab !== 'hub' ? (
+                ) : activeTab !== 'add' ? (
                     <div className="agent-sections">
                         {ALL_SECTIONS.map(scope => {
-                            const sectionSkills = groupedSkills[scope] || [];
-                            if (sectionSkills.length === 0) return null;
+                            const sectionCommands = groupedCommands[scope] || [];
+                            if (sectionCommands.length === 0) return null;
 
                             const isCollapsed = collapsedSections.has(scope);
                             const toggleCollapse = () => setCollapsedSections(prev => {
@@ -251,18 +271,18 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
                                         onClick={toggleCollapse}
                                     >
                                         {SECTION_TITLES[scope]}
-                                        {scope !== 'other' && LOCATE_PATHS[scope as SkillScope] && (
-                                            <span className="section-group-count">({LOCATE_PATHS[scope as SkillScope]})</span>
+                                        {scope !== 'other' && LOCATE_PATHS[scope as CommandScope] && (
+                                            <span className="section-group-count">({LOCATE_PATHS[scope as CommandScope]})</span>
                                         )}
                                         <span className={`section-collapse-arrow ${isCollapsed ? 'collapsed' : ''}`} />
                                     </div>
                                     {!isCollapsed && (
-                                        sectionSkills.length === 0 ? (
-                                            <div className="section-empty">暂无 Skill</div>
+                                        sectionCommands.length === 0 ? (
+                                            <div className="section-empty">暂无 Command</div>
                                         ) : (
                                             <div className="agent-list">
-                                                {sectionSkills.map((skill, localIndex) =>
-                                                    renderSkillCard(skill, getGlobalIndex(scope, localIndex))
+                                                {sectionCommands.map((cmd, localIndex) =>
+                                                    renderCommandCard(cmd, getGlobalIndex(scope, localIndex))
                                                 )}
                                             </div>
                                         )
@@ -270,8 +290,8 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
                                 </div>
                             );
                         })}
-                        {ALL_SECTIONS.every(s => (groupedSkills[s] || []).length === 0) && (
-                            <div className="section-empty">暂无 Skill</div>
+                        {ALL_SECTIONS.every(s => (groupedCommands[s] || []).length === 0) && (
+                            <div className="section-empty">暂无 Command</div>
                         )}
                     </div>
                 ) : null}
@@ -280,4 +300,4 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
     );
 };
 
-export default SkillConfig;
+export default CommandConfig;

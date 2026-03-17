@@ -28,8 +28,8 @@ import ShortcutPanel from './components/ShortcutPanel';
 import AgentModeMenu from './components/AgentModeMenu';
 
 // 导入工具函数
-import { isExactCommandMatch, getFilteredShortcutCommands } from './utils/commandUtils';
-import { ShortcutCommand } from '../../../../core/command';
+import { isExactCommandMatch, setCustomCommands, getFilteredShortcutCommands } from './utils/commandUtils';
+import { ShortcutCommand } from '../../../../core/util/command';
 
 // 暴露给父组件的方法接口
 export interface InputBoxHandle {
@@ -71,6 +71,7 @@ const InputBox = forwardRef<InputBoxHandle, InputBoxProps>(({
     const [isComposing, setIsComposing] = useState<boolean>(false);
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
     const [selectedCommandIndex, setSelectedCommandIndex] = useState<number>(0);
+    const [shortcutCommands, setShortcutCommands] = useState<ShortcutCommand[]>(() => getFilteredShortcutCommands(''));
 
     // Refs
     const inputBoxRef = useRef<HTMLTextAreaElement>(null);
@@ -108,6 +109,25 @@ const InputBox = forwardRef<InputBoxHandle, InputBoxProps>(({
             inputHistory.initializeHistory(projectInputHistory);
         }
     }, [projectInputHistory]);
+
+    // 快捷面板打开时请求最新命令列表
+    useEffect(() => {
+        if (shortcutPanel.showShortcutPanel) {
+            vscode.postMessage({ type: 'requestCommands' });
+        }
+    }, [shortcutPanel.showShortcutPanel]);
+
+    // 监听自定义命令加载完成事件
+    useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data.type === 'customCommandsLoaded' && Array.isArray(event.data.commands)) {
+                setCustomCommands(event.data.commands);
+                setShortcutCommands(getFilteredShortcutCommands(''));
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
 
     const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
         const pastedText = e.clipboardData.getData('text');
@@ -556,6 +576,7 @@ const InputBox = forwardRef<InputBoxHandle, InputBoxProps>(({
                 {/* 快捷面板 */}
                 <ShortcutPanel
                     show={shortcutPanel.showShortcutPanel}
+                    commands={shortcutCommands}
                     searchQuery={
                         inputValue.trim().startsWith('/')
                             ? inputValue.trim().slice(1).split(' ')[0]  // 去掉 '/'，只取命令部分（空格前）

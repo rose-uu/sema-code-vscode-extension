@@ -11,7 +11,7 @@ import { ConfigWebviewProvider } from '../webview/config/configWebview';
 import { SessionHistoryWebviewProvider } from '../webview/sessionHistory/sessionHistoryWebview';
 import { MessageHandler } from './MessageHandler';
 import { SemaCoreWrapper } from './semaCoreWrapper';
-import { transformCommandToPrompt } from './command';
+import { transformCommandToPrompt } from './util/prompt';
 
 
 /**
@@ -97,7 +97,8 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
                 initializeSession: async () => await this.coreManager.createSession(),
                 checkConfiguration: async () => await this.checkConfiguration(),
                 insertPermissionRequest: (permissionData) => this.coreManager.insertPermissionRequestMessage(permissionData),
-                updateAgentMode: async (mode) => await this.updateAgentMode(mode)
+                updateAgentMode: async (mode) => await this.updateAgentMode(mode),
+                requestCommands: async () => await this.sendCommands()
             }
         );
 
@@ -304,21 +305,6 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
                     type: 'updateTokenInfo',
                     tokenInfo: data.usage
                 });
-            }
-
-            // 加载自定义命令
-            try {
-                const customCommands = await this.coreManager.getCustomCommands();
-               // console.log('[Backend] Loaded custom commands:', customCommands.length, 'commands');
-
-                // 通知前端更新命令列表
-                this.chatWebviewProvider.postMessage({
-                    type: 'customCommandsLoaded',
-                    commands: customCommands
-                });
-            } catch (error) {
-                console.error('Error loading custom commands:', error);
-                // 不阻塞会话初始化，只记录错误
             }
 
         } catch (error) {
@@ -674,6 +660,22 @@ export class SemaSidebarProvider implements vscode.WebviewViewProvider {
 
         if (this.sessionHistoryWebviewProvider) {
             this.sessionHistoryWebviewProvider.refreshSessionList();
+        }
+    }
+
+    /**
+     * 发送自定义命令列表到前端
+     */
+    private async sendCommands(): Promise<void> {
+        try {
+            const commands = await this.coreManager.getCommandsInfo();
+            // console.log('commands:', commands)
+            this.chatWebviewProvider.postMessage({
+                type: 'customCommandsLoaded',
+                commands
+            });
+        } catch (error) {
+            console.error('Error loading commands:', error);
         }
     }
 

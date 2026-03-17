@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { FileChange, TokenInfo, AppProps, SelectedFile, TodoItem, Message } from './types';
 import InputBox, { InputBoxHandle } from './components/input/InputBox';
-import { updateCustomCommands } from '../../core/command';
-import { clearCommandCache } from './components/input/utils/commandUtils';
+
 import EditBlock from './blocks/tools/EditBlock';
 import NotebookEditBlock from './blocks/tools/NotebookEditBlock';
 import ReadBlock from './blocks/tools/ReadBlock';
@@ -43,9 +42,6 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     const [projectInputHistory, setProjectInputHistory] = useState<string[]>([]);
     const [spinnerAccumulatedSeconds, setSpinnerAccumulatedSeconds] = useState<number>(0);
     const [agentMode, setAgentMode] = useState<'Agent' | 'Plan'>('Agent');
-    // 用于触发命令列表重新渲染的版本号
-    // 当自定义命令更新时，版本号递增，触发依赖它的组件重新渲染
-    const [customCommandsVersion, setCustomCommandsVersion] = useState<number>(0);
 
     const outputContainerRef = useRef<HTMLDivElement>(null);
     const inputBoxRef = useRef<InputBoxHandle>(null);
@@ -219,19 +215,6 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     // 接收后端的模式更新（例如退出Plan模式后自动切换回Agent模式）
                     if (message.mode) {
                         setAgentMode(message.mode);
-                    }
-                    break;
-                case 'customCommandsLoaded':
-                    // 自定义命令加载完成
-                    // console.log('[Frontend] Received custom commands:', message.commands);
-                    // 在前端更新命令映射
-                    if (message.commands && Array.isArray(message.commands)) {
-                        updateCustomCommands(message.commands);
-                        // 清空前端命令缓存
-                        clearCommandCache();
-                        // console.log('[Frontend] Updated custom commands map');
-                        // 触发版本更新以重新渲染快捷面板
-                        setCustomCommandsVersion(prev => prev + 1);
                     }
                     break;
             }
@@ -730,7 +713,6 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                 projectInputHistory={projectInputHistory}
                 agentMode={agentMode}
                 onAgentModeChange={handleAgentModeChange}
-                key={customCommandsVersion}
             />
         </>
     );

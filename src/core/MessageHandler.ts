@@ -25,6 +25,7 @@ export interface MessageHandlerCallbacks {
     checkConfiguration: () => Promise<void>;
     insertPermissionRequest: (permissionData: any) => void;
     updateAgentMode: (mode: 'Agent' | 'Plan') => Promise<void>;
+    requestCommands: () => Promise<void>;
 }
 
 /**
@@ -107,6 +108,9 @@ export class MessageHandler {
                 break;
             case 'updateAgentMode':
                 await this.callbacks.updateAgentMode(message.mode);
+                break;
+            case 'requestCommands':
+                await this.callbacks.requestCommands();
                 break;
         }
     }

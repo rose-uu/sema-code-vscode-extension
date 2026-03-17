@@ -8,8 +8,9 @@ import MCPConfig from './MCPConfig';
 import SkillConfig from './SkillConfig';
 import AgentConfig from './AgentConfig';
 import PluginConfig from './PluginConfig';
+import CommandConfig from './CommandConfig';
 
-type PageType = 'models' | 'system' | 'mcp' | 'skill' | 'agent' | 'plugin';
+type PageType = 'models' | 'system' | 'mcp' | 'skill' | 'agent' | 'command' | 'plugin';
 type ModelTabType = 'list' | 'add';
 
 interface AppProps {
@@ -70,6 +71,13 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     onClick={() => setCurrentPage('mcp')}
                 >
                     Tools & MCP
+                </div>
+
+                <div
+                    className={`nav-item nav-main ${currentPage === 'command' ? 'active' : ''}`}
+                    onClick={() => setCurrentPage('command')}
+                >
+                    Commands
                 </div>
 
                 <div
@@ -146,6 +154,13 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                 {currentPage === 'agent' && (
                     <div className="page active">
                         <AgentConfig vscode={vscode} />
+                    </div>
+                )}
+
+                {/* command页面 */}
+                {currentPage === 'command' && (
+                    <div className="page active">
+                        <CommandConfig vscode={vscode} />
                     </div>
                 )}
 

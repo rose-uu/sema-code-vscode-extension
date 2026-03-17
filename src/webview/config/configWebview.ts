@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { defaultConfig } from './default/defaultConfig';
 import { AgentConfig } from './types/agent';
+import { CommandConfig } from './types/command';
 
 export class ConfigWebviewProvider {
     private panel?: vscode.WebviewPanel;
@@ -59,10 +60,15 @@ export class ConfigWebviewProvider {
                 addMarketplaceFromDirectory:() => this.addMarketplace('directory', m.dirPath),
                 loadAgentsInfo:             () => this.loadAgentsInfo(),
                 refreshAgents:              () => this.refreshAgentsInfo(),
-                loadSkillsInfo:             () => this.loadSkillsInfo(),
-                refreshSkills:              () => this.refreshSkillsInfo(),
                 addAgent:                   () => this.addAgent(m.data),
                 removeAgent:                () => this.removeAgent(m.name),
+                loadSkillsInfo:             () => this.loadSkillsInfo(),
+                refreshSkills:              () => this.refreshSkillsInfo(),
+                removeSkill:                () => this.removeSkill(m.name),
+                loadCommandsInfo:           () => this.loadCommandsInfo(),
+                refreshCommandsInfo:        () => this.refreshCommandsInfo(),
+                addCommand:                 () => this.addCommand(m.data),
+                removeCommand:              () => this.removeCommand(m.name),
                 openFile:              () => Promise.resolve(this.openFile(m.filePath)),
             };
             await handlers[m.command]?.();
@@ -452,6 +458,56 @@ export class ConfigWebviewProvider {
         } catch (error) {
             this.postMessage({ command: 'refreshSkillsInfoResult', success: false, data: [], message: (error as Error).message });
         }
+    }
+
+    private async removeSkill(name: string) {
+        if (!await this.confirm(`确定要删除 Skill "${name}" 吗？`, '删除')) return;
+        await this.execute('removeSkillResult', '删除 Skill', async () => {
+            await this.coreManager.removeSkillConf(name);
+            this.postMessage({ command: 'removeSkillResult', success: true, message: 'Skill 已删除' });
+            this.loadSkillsInfo();
+        });
+    }
+
+    // ─── Commands ─────────────────────────────────────────────────────────────
+
+    private async loadCommandsInfo() {
+        if (!this.panel) return;
+        try {
+            await this.ensureCoreReady();
+            const commandsInfo = await this.coreManager.getCommandsInfo();
+            // console.log('[loadCommandsInfo] data:', commandsInfo);
+            this.postMessage({ command: 'loadCommandsInfoResult', success: true, data: commandsInfo });
+        } catch (error) {
+            this.postMessage({ command: 'loadCommandsInfoResult', success: false, data: [], message: (error as Error).message });
+        }
+    }
+
+    private async refreshCommandsInfo() {
+        if (!this.panel) return;
+        try {
+            await this.ensureCoreReady();
+            this.postMessage({ command: 'refreshCommandsInfoResult', success: true, data: await this.coreManager.refreshCommandsInfo() });
+        } catch (error) {
+            this.postMessage({ command: 'refreshCommandsInfoResult', success: false, data: [], message: (error as Error).message });
+        }
+    }
+
+    private async addCommand(data: Omit<CommandConfig, 'locate'> & { locate: 'project' | 'user' }) {
+        await this.execute('addCommandResult', '创建 Command', async () => {
+            await this.coreManager.addCommandConf(data);
+            this.postMessage({ command: 'addCommandResult', success: true, message: 'Command 创建成功' });
+            this.loadCommandsInfo();
+        });
+    }
+
+    private async removeCommand(name: string) {
+        if (!await this.confirm(`确定要删除 Command "${name}" 吗？`, '删除')) return;
+        await this.execute('removeCommandResult', '删除 Command', async () => {
+            await this.coreManager.removeCommandConf(name);
+            this.postMessage({ command: 'removeCommandResult', success: true, message: 'Command 已删除' });
+            this.loadCommandsInfo();
+        });
     }
 
     // ─── Utils ────────────────────────────────────────────────────────────────
