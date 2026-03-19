@@ -13,6 +13,7 @@ import { CommandConfig } from './types/command';
 export class ConfigWebviewProvider {
     private panel?: vscode.WebviewPanel;
     private coreManager: any;
+    private mcpStatusHandler?: (data: any) => void;
 
     constructor(coreManager: any) {
         this.coreManager = coreManager;
@@ -31,6 +32,12 @@ export class ConfigWebviewProvider {
 
         this.panel.webview.html = this.getHtmlContent(this.panel.webview, extensionUri);
 
+        // 订阅 MCP 服务状态变更事件，实时推送给 webview
+        this.mcpStatusHandler = (data: any) => {
+            this.postMessage({ command: 'mcpServerStatusUpdate', data });
+        };
+        this.coreManager.on('mcp:server:status', this.mcpStatusHandler);
+
         this.panel.webview.onDidReceiveMessage(async (msg) => {
             const m = msg;
             const handlers: Record<string, () => Promise<void>> = {
@@ -46,14 +53,9 @@ export class ConfigWebviewProvider {
                 saveSystemConfig:           () => this.saveSystemConfig(m.data),
                 saveSystemConfigByKey:      () => this.saveSystemConfigByKey(m.key, m.value),
                 resetSystemConfig:          () => this.resetSystemConfig(),
-                loadMCPConfig:              () => this.loadMCPConfig(),
-                reconnectMCP:               () => this.reconnectMCP(m.name),
-                updateMCPConfig:            () => this.updateMCPConfig(m.config, m.scope),
-                deleteMCPConfig:            () => this.deleteMCPConfig(m.name, m.scope),
                 openExternal:               () => Promise.resolve(this.openExternalUrl(m.url)),
                 loadSystemTools:            () => this.loadSystemTools(),
                 updateUseTools:             () => this.updateUseTools(m.tools),
-                updateMCPUseTools:          () => this.updateMCPUseTools(m.mcpName, m.tools),
                 getModelAdapter:            () => Promise.resolve(this.getModelAdapter(m.provider, m.modelName)),
                 loadPluginConfig:           () => this.loadPluginConfig(),
                 refreshPluginConfig:        () => this.refreshPluginConfig(),
@@ -78,12 +80,26 @@ export class ConfigWebviewProvider {
                 refreshCommandsInfo:        () => this.refreshCommandsInfo(),
                 addCommand:                 () => this.addCommand(m.data),
                 removeCommand:              () => this.removeCommand(m.name),
+                loadMCPConfig:              () => this.loadMCPServerInfo(),
+                refreshMCPConfig:           () => this.refreshMCPServerInfo(),
+                addMCPServer:               () => this.addMCPServer(m.data),
+                removeMCPServer:            () => this.removeMCPServer(m.name),
+                reconnectMCPServer:         () => this.reconnectMCPServer(m.name),
+                disableMCPServer:           () => this.disableMCPServer(m.name),
+                enableMCPServer:            () => this.enableMCPServer(m.name),
+                updateMCPUseTools:          () => this.updateMCPUseTools(m.name, m.toolNames),
                 openFile:              () => Promise.resolve(this.openFile(m.filePath)),
             };
             await handlers[m.command]?.();
         });
 
-        this.panel.onDidDispose(() => { this.panel = undefined; });
+        this.panel.onDidDispose(() => {
+            if (this.mcpStatusHandler) {
+                this.coreManager.off('mcp:server:status', this.mcpStatusHandler);
+                this.mcpStatusHandler = undefined;
+            }
+            this.panel = undefined;
+        });
         this.loadConfig();
     }
 
@@ -258,46 +274,6 @@ export class ConfigWebviewProvider {
         });
     }
 
-    // ─── MCP ─────────────────────────────────────────────────────────────────
-
-    private async loadMCPConfig() {
-        if (!this.panel) return;
-        try {
-            await this.ensureCoreReady();
-            const mcpConfigs = this.coreManager.getMCPServerConfigs();
-            this.postMessage({ command: 'loadMCPConfigResult', success: true, data: { project: mcpConfigs.get('project') || [], user: mcpConfigs.get('user') || [] } });
-        } catch (error) {
-            this.postMessage({ command: 'loadMCPConfigResult', success: false, data: { project: [], user: [] }, message: (error as Error).message });
-        }
-    }
-
-    private async reconnectMCP(name: string) {
-        if (!this.panel) return;
-        try {
-            await this.ensureCoreReady();
-            const status = await this.coreManager.connectMCPServer(name);
-            this.postMessage({ command: 'mcpReconnectResult', success: true, name, status });
-        } catch (error) {
-            this.postMessage({ command: 'mcpReconnectResult', success: false, name, message: (error as Error).message });
-            vscode.window.showErrorMessage(`重新连接 MCP 服务失败：${(error as Error).message}`);
-        }
-    }
-
-    private async updateMCPConfig(config: any, scope: 'project' | 'user') {
-        await this.execute('mcpUpdateResult', '更新 MCP 配置', async () => {
-            await this.coreManager.addOrUpdateMCPServer(config, scope);
-            this.postMessage({ command: 'mcpUpdateResult', success: true, message: 'MCP 配置已更新' });
-        });
-    }
-
-    private async deleteMCPConfig(name: string, scope: 'project' | 'user') {
-        if (!await this.confirm(`确定要删除 MCP 服务 "${name}" 吗？`, '删除')) return;
-        await this.execute('mcpDeleteResult', '删除 MCP 配置', async () => {
-            await this.coreManager.removeMCPServer(name, scope);
-            this.postMessage({ command: 'mcpDeleteResult', success: true, message: 'MCP 配置已删除' });
-        });
-    }
-
     // ─── Tools ────────────────────────────────────────────────────────────────
 
     private async loadSystemTools() {
@@ -314,13 +290,6 @@ export class ConfigWebviewProvider {
         await this.execute('updateUseToolsResult', '更新工具配置', async () => {
             await this.coreManager.updateUseTools(tools);
             this.postMessage({ command: 'updateUseToolsResult', success: true, message: '工具配置已更新' });
-        });
-    }
-
-    private async updateMCPUseTools(mcpName: string, tools: string[] | null) {
-        await this.execute('updateMCPUseToolsResult', '更新 MCP 工具配置', async () => {
-            this.coreManager.updateMCPUseTools(mcpName, tools);
-            this.postMessage({ command: 'updateMCPUseToolsResult', success: true, message: 'MCP 工具配置已更新' });
         });
     }
 
@@ -430,18 +399,16 @@ export class ConfigWebviewProvider {
 
     private async addAgent(data: Omit<AgentConfig, 'locate'> & { locate: 'project' | 'user' }) {
         await this.execute('addAgentResult', '创建 Agent', async () => {
-            await this.coreManager.addAgentConf(data);
-            this.postMessage({ command: 'addAgentResult', success: true, message: 'Agent 创建成功' });
-            this.loadAgentsInfo();
+            const agents = await this.coreManager.addAgentConf(data);
+            this.postMessage({ command: 'addAgentResult', success: true, message: 'Agent 创建成功', data: agents });
         });
     }
 
     private async removeAgent(name: string) {
         if (!await this.confirm(`确定要删除 Agent "${name}" 吗？`, '删除')) return;
         await this.execute('removeAgentResult', '删除 Agent', async () => {
-            await this.coreManager.removeAgentConf(name);
-            this.postMessage({ command: 'removeAgentResult', success: true, message: 'Agent 已删除' });
-            this.loadAgentsInfo();
+            const agents = await this.coreManager.removeAgentConf(name);
+            this.postMessage({ command: 'removeAgentResult', success: true, message: 'Agent 已删除', data: agents });
         });
     }
 
@@ -472,9 +439,8 @@ export class ConfigWebviewProvider {
     private async removeSkill(name: string) {
         if (!await this.confirm(`确定要删除 Skill "${name}" 吗？`, '删除')) return;
         await this.execute('removeSkillResult', '删除 Skill', async () => {
-            await this.coreManager.removeSkillConf(name);
-            this.postMessage({ command: 'removeSkillResult', success: true, message: 'Skill 已删除' });
-            this.loadSkillsInfo();
+            const skills = await this.coreManager.removeSkillConf(name);
+            this.postMessage({ command: 'removeSkillResult', success: true, message: 'Skill 已删除', data: skills });
         });
     }
 
@@ -601,18 +567,84 @@ export class ConfigWebviewProvider {
 
     private async addCommand(data: Omit<CommandConfig, 'locate'> & { locate: 'project' | 'user' }) {
         await this.execute('addCommandResult', '创建 Command', async () => {
-            await this.coreManager.addCommandConf(data);
-            this.postMessage({ command: 'addCommandResult', success: true, message: 'Command 创建成功' });
-            this.loadCommandsInfo();
+            const commands = await this.coreManager.addCommandConf(data);
+            this.postMessage({ command: 'addCommandResult', success: true, message: 'Command 创建成功', data: commands });
         });
     }
 
     private async removeCommand(name: string) {
         if (!await this.confirm(`确定要删除 Command "${name}" 吗？`, '删除')) return;
         await this.execute('removeCommandResult', '删除 Command', async () => {
-            await this.coreManager.removeCommandConf(name);
-            this.postMessage({ command: 'removeCommandResult', success: true, message: 'Command 已删除' });
-            this.loadCommandsInfo();
+            const commands = await this.coreManager.removeCommandConf(name);
+            this.postMessage({ command: 'removeCommandResult', success: true, message: 'Command 已删除', data: commands });
+        });
+    }
+
+    // ─── MCP ─────────────────────────────────────────────────────────────────
+
+    private async loadMCPServerInfo() {
+        if (!this.panel) return;
+        try {
+            await this.ensureCoreReady();
+            const MCPServerInfo = await this.coreManager.getMCPServerInfo();
+            // console.log('[loadMCPServerInfo] data:', MCPServerInfo);
+            this.postMessage({ command: 'loadMCPServerInfoResult', success: true, data: MCPServerInfo });
+        } catch (error) {
+            this.postMessage({ command: 'loadMCPServerInfoResult', success: false, data: [], message: (error as Error).message });
+        }
+    }
+
+    private async refreshMCPServerInfo() {
+        if (!this.panel) return;
+        try {
+            await this.ensureCoreReady();
+            const MCPServerInfo = await this.coreManager.refreshMCPServerInfo();
+            this.postMessage({ command: 'refreshMCPServerInfoResult', success: true, data: MCPServerInfo });
+        } catch (error) {
+            this.postMessage({ command: 'refreshMCPServerInfoResult', success: false, data: [], message: (error as Error).message });
+        }
+    }
+
+    private async addMCPServer(data: any) {
+        await this.execute('addMCPServerResult', '添加 MCP Server', async () => {
+            const servers = await this.coreManager.addMCPServer(data);
+            this.postMessage({ command: 'addMCPServerResult', success: true, message: 'MCP Server 添加成功', data: servers });
+        });
+    }
+
+    private async removeMCPServer(name: string) {
+        if (!await this.confirm(`确定要删除 MCP Server "${name}" 吗？`, '删除')) return;
+        await this.execute('removeMCPServerResult', '删除 MCP Server', async () => {
+            const servers = await this.coreManager.removeMCPServer(name);
+            this.postMessage({ command: 'removeMCPServerResult', success: true, message: 'MCP Server 已删除', data: servers });
+        });
+    }
+
+    private async reconnectMCPServer(name: string) {
+        await this.execute('reconnectMCPServerResult', '重连 MCP Server', async () => {
+            const servers = await this.coreManager.reconnectMCPServer(name);
+            this.postMessage({ command: 'reconnectMCPServerResult', success: true, message: 'MCP Server 重连成功', data: servers });
+        });
+    }
+
+    private async disableMCPServer(name: string) {
+        await this.execute('disableMCPServerResult', '禁用 MCP Server', async () => {
+            const servers = await this.coreManager.disableMCPServer(name);
+            this.postMessage({ command: 'disableMCPServerResult', success: true, data: servers });
+        });
+    }
+
+    private async enableMCPServer(name: string) {
+        await this.execute('enableMCPServerResult', '启用 MCP Server', async () => {
+            const servers = await this.coreManager.enableMCPServer(name);
+            this.postMessage({ command: 'enableMCPServerResult', success: true, data: servers });
+        });
+    }
+
+    private async updateMCPUseTools(name: string, toolNames: string[]) {
+        await this.execute('updateMCPUseToolsResult', '更新 MCP 工具配置', async () => {
+            const servers = await this.coreManager.updateMCPUseTools(name, toolNames);
+            this.postMessage({ command: 'updateMCPUseToolsResult', success: true, message: '工具配置已更新', data: servers });
         });
     }
 

@@ -23,15 +23,16 @@ export interface MarketplaceInfo {
     from: string;
 }
 
-export interface PluginComponentItem {
+export interface PluginComponentEntry {
     name: string;
     filePath: string;
 }
 
 export interface PluginComponents {
-    commands: PluginComponentItem[];
-    agents: PluginComponentItem[];
-    skills: PluginComponentItem[];
+    commands: PluginComponentEntry[];
+    agents: PluginComponentEntry[];
+    skills: PluginComponentEntry[];
+    mcp: PluginComponentEntry[]
 }
 
 export interface PluginInfo {

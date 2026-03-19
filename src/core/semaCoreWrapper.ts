@@ -22,7 +22,8 @@ import {
     PlanExitRequestData,
     PlanExitResponseData,
     PlanImplementData,
-    FileReferenceData
+    FileReferenceData,
+    MCPServerStatusData
 } from 'sema-core/event';
 import {
     SemaCoreConfig,
@@ -34,16 +35,15 @@ import {
     ApiTestResult,
     ModelUpdateData,
     UpdatableCoreConfig,
-    MCPServerConfig,
-    MCPScopeType,
-    MCPServerInfo,
     ToolInfo,
     MAIN_AGENT_ID,
     MarketplacePluginsInfo,
     PluginScope,
     AgentConfig,
     SkillConfig,
-    CommandConfig
+    CommandConfig,
+    MCPServerConfig,
+    MCPServerInfo
 } from 'sema-core/types';
 
 import { SystemConfigManager } from '../managers/SystemConfigManager';
@@ -64,6 +64,7 @@ export interface SemaWrapperCallbacks {
     onUsageUpdate?: (data: ConversationUsageData) => void;
     onTodosUpdate?: (todos: TodosUpdateData) => void;
     onTopicUpdate?: (topic: TopicUpdateData) => void;
+    onMCPServerStatus?: (data: MCPServerStatusData) => void;
 }
 
 export interface Message {
@@ -119,7 +120,7 @@ export class SemaCoreWrapper {
 
         const config: SemaCoreConfig = {
             workingDir,
-            logLevel: 'error',
+            logLevel: 'debug',
             ...systemConfig,
             useTools: useTools
         };
@@ -604,6 +605,11 @@ export class SemaCoreWrapper {
             this.sendContentUpdate();
         });
 
+        // 监听 MCP 服务状态变更事件
+        this.semaCore.on<MCPServerStatusData>('mcp:server:status', (data) => {
+            this.callbacks.onMCPServerStatus?.(data);
+        });
+
         // 监听子代理事件
         this.semaCore.on<TaskAgentStartData>('task:agent:start', (data) => {
             // console.log('Task agent start:', data);
@@ -869,36 +875,6 @@ export class SemaCoreWrapper {
         return await this.semaCore.testApiConnection(params);
     }
 
-    // ===== MCP 管理相关方法 =====
-
-    /**
-     * 添加或更新 MCP 服务器配置
-     */
-    public async addOrUpdateMCPServer(config: MCPServerConfig, scope: MCPScopeType): Promise<MCPServerInfo> {
-        return await this.semaCore.addOrUpdateMCPServer(config, scope);
-    }
-
-    /**
-     * 移除 MCP 服务器
-     */
-    public async removeMCPServer(name: string, scope: MCPScopeType): Promise<boolean> {
-        return await this.semaCore.removeMCPServer(name, scope);
-    }
-
-    /**
-     * 获取 MCP 服务器配置列表
-     */
-    public getMCPServerConfigs(): Map<MCPScopeType, MCPServerInfo[]> {
-        return this.semaCore.getMCPServerConfigs();
-    }
-
-    /**
-     * 连接指定的 MCP Server
-     */
-    public connectMCPServer(name: string): Promise<MCPServerInfo> {
-        return this.semaCore.connectMCPServer(name);
-    }
-
     /**
      * 获取模型适配器类型
      */
@@ -925,13 +901,6 @@ export class SemaCoreWrapper {
         // console.log(`触发core.updateUseTools: ${toolNames}`)
         await this.systemConfigManager.saveUseTools(toolNames);
         this.semaCore.updateUseTools(toolNames);
-    }
-
-    /**
-     * 更新mcp使用的工具列表
-     */
-    public updateMCPUseTools(mcpName: string, toolNames: string[] | null): void {
-        this.semaCore.updateMCPUseTools(mcpName, toolNames);
     }
 
     /**
@@ -1270,6 +1239,39 @@ export class SemaCoreWrapper {
         return this.semaCore.removeCommandConf(name);
     }
 
+    // ===== MCP 管理相关方法 =====
+
+    public getMCPServerInfo(): Promise<MCPServerInfo[]> {
+        return this.semaCore.getMCPServerInfo();
+    }
+
+    public refreshMCPServerInfo(): Promise<MCPServerInfo[]> {
+        return this.semaCore.refreshMCPServerInfo();
+    }
+
+    public addMCPServer(mcpConfig: MCPServerConfig): Promise<MCPServerInfo[]> {
+        return this.semaCore.addMCPServer(mcpConfig);
+    }
+
+    public removeMCPServer(name: string): Promise<MCPServerInfo[]> {
+        return this.semaCore.removeMCPServer(name);
+    }
+
+    public reconnectMCPServer(name: string): Promise<MCPServerInfo[]> {
+        return this.semaCore.reconnectMCPServer(name);
+    }
+
+    public disableMCPServer(name: string): Promise<MCPServerInfo[]> {
+        return this.semaCore.disableMCPServer(name);
+    }
+
+    public enableMCPServer(name: string): Promise<MCPServerInfo[]> {
+        return this.semaCore.enableMCPServer(name);
+    }
+
+    public updateMCPUseTools(name: string, toolNames: string[]): Promise<MCPServerInfo[]> {
+        return this.semaCore.updateMCPUseTools(name, toolNames);
+    }
 
     /**
      * 销毁wrapper实例

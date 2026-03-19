@@ -391,6 +391,18 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
                             })}
                         </div>
                     )}
+                    {hubSearched && hubResults.length > 0 && !hubLoading && (
+                        <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                            信息来自{' '}
+                            <a
+                                href="#"
+                                className="mcp-npx-hint-link"
+                                onClick={(e) => { e.preventDefault(); vscode.postMessage({ command: 'openExternal', url: 'https://skillhub.tencent.com' }); }}
+                            >
+                                SkillHub
+                            </a>
+                        </div>
+                    )}
                 </div>
                 {activeTab !== 'hub' && loading ? (
                     <div className="agent-loading">加载中...</div>

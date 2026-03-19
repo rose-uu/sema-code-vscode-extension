@@ -74,61 +74,6 @@ declare global {
     }
 }
 
-// MCP 相关类型定义
-export type MCPTransportType = 'stdio' | 'sse' | 'http';
-export type MCPScopeType = 'project' | 'user';
-export type MCPServerStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
-
-export interface MCPServerConfig {
-    name: string;
-    transport: MCPTransportType;
-    description?: string;
-    enabled?: boolean;
-    command?: string;
-    args?: string[];
-    env?: Record<string, string>;
-    url?: string;
-    headers?: Record<string, string>;
-    useTools?: string[] | null;
-}
-
-export interface MCPToolDefinition {
-    name: string;
-    description?: string;
-    inputSchema: {
-        type: 'object';
-        properties?: Record<string, any>;
-        required?: string[];
-    };
-}
-
-export interface MCPServerCapabilities {
-    tools?: MCPToolDefinition[];
-}
-
-export interface MCPServerInfo {
-    config: MCPServerConfig;
-    status: MCPServerStatus;
-    capabilities?: MCPServerCapabilities;
-    error?: string;
-    connectedAt?: number;
-}
-
-export interface MCPData {
-    project: MCPServerInfo[];
-    user: MCPServerInfo[];
-}
-
-// MCP 市场相关类型
-export interface MCPMarketInfo {
-    config: MCPServerConfig;
-    description: string;
-    icon: string;
-    github?: string;
-    tools: string[];
-    tags: string[];
-}
-
 // 工具信息类型
 export interface ToolInfo {
   name: string
@@ -144,16 +89,6 @@ export interface SystemToolInfo extends ToolInfo {
 // 系统工具数据
 export interface SystemToolsData {
   tools: SystemToolInfo[]
-}
-
-// Skill 位置类型
-export type SkillLocate = 'user' | 'project';
-
-// Skill 信息类型
-export interface SkillInfo {
-  name: string;
-  description: string;
-  locate: SkillLocate;
 }
 
 // 工具预设类型

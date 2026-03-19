@@ -16,7 +16,7 @@ import {
 import {
     PluginScope,
     PluginInfo,
-    PluginComponentItem,
+    PluginComponentEntry,
     MarketplaceInfo,
     AvailablePlugin,
     PluginTabType,
@@ -51,7 +51,7 @@ const PluginNameIcon: React.FC<{ name: string }> = ({ name }) => {
 };
 
 // 组件标签列表 - 竖向排列，最多显示3项
-const ComponentBadges: React.FC<{ label: string; items: PluginComponentItem[]; onOpenFile?: (filePath: string) => void }> = ({ label, items, onOpenFile }) => {
+const ComponentBadges: React.FC<{ label: string; items: PluginComponentEntry[]; onOpenFile?: (filePath: string) => void }> = ({ label, items, onOpenFile }) => {
     const [expanded, setExpanded] = useState(false);
     if (!items || items.length === 0) return null;
     const SHOW_MAX = 3;
@@ -100,7 +100,8 @@ const InstalledPluginCard: React.FC<{
     const hasComponents = (
         (plugin.components?.commands?.length > 0) ||
         (plugin.components?.agents?.length > 0) ||
-        (plugin.components?.skills?.length > 0)
+        (plugin.components?.skills?.length > 0) ||
+        (plugin.components?.mcp?.length > 0)
     );
     const displayName = `${plugin.name}@${plugin.marketplace}`;
 
@@ -180,6 +181,7 @@ const InstalledPluginCard: React.FC<{
                             <ComponentBadges label="Commands:" items={plugin.components?.commands || []} onOpenFile={onOpenFile} />
                             <ComponentBadges label="Agents:" items={plugin.components?.agents || []} onOpenFile={onOpenFile} />
                             <ComponentBadges label="Skills:" items={plugin.components?.skills || []} onOpenFile={onOpenFile} />
+                            <ComponentBadges label="MCP:" items={plugin.components?.mcp || []} onOpenFile={onOpenFile} />
                         </div>
                     )}
                 </div>

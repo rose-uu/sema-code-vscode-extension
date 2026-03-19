@@ -32,7 +32,7 @@ export const DEFAULT_CONTEXT_LENGTH_OPTIONS = [32000, 64000, 128000, 256000, 512
 export const DEFAULT_MAX_TOKENS = 8192;
 
 /** Main 任务推荐模型，为空则不显示推荐提示 */
-export const RECOMMENDED_MAIN_MODEL = 'Claude Sonnet 4.5';
+export const RECOMMENDED_MAIN_MODEL = 'Claude Sonnet 4.6';
 
 /** Quick 任务推荐模型，为空则不显示推荐提示 */
 export const RECOMMENDED_QUICK_MODEL = 'Claude Haiku 4.5';
