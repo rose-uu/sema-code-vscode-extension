@@ -17,6 +17,7 @@ interface SystemConfigData {
     systemPrompt?: string;
     customRules?: string;
     enableLLMCache?: boolean;
+    enableClaudeCodeCompat?: boolean;
 }
 
 const SystemConfig: React.FC<SystemConfigProps> = ({ vscode }) => {
@@ -166,17 +167,31 @@ const SystemConfig: React.FC<SystemConfigProps> = ({ vscode }) => {
                     </div>
                 </div>
 
-                {/* 缓存单独一行 */}
-                <div className="form-group">
-                    <label className="checkbox-label" title="启用LLM响应缓存，建议仅在测试时使用">
-                        <input
-                            type="checkbox"
-                            checked={config.enableLLMCache || false}
-                            onChange={(e) => handleChange('enableLLMCache', e.target.checked)}
-                        />
-                        <span className="checkmark"></span>
-                        启用LLM缓存
-                    </label>
+                {/* 缓存和ClaudeCode兼容一行 */}
+                <div className="form-row">
+                    <div className="form-group">
+                        <label className="checkbox-label" title="启用LLM响应缓存，建议仅在测试时使用">
+                            <input
+                                type="checkbox"
+                                checked={config.enableLLMCache || false}
+                                onChange={(e) => handleChange('enableLLMCache', e.target.checked)}
+                            />
+                            <span className="checkmark"></span>
+                            启用LLM缓存
+                        </label>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="checkbox-label" title="启用后将兼容ClaudeCode生态">
+                            <input
+                                type="checkbox"
+                                checked={config.enableClaudeCodeCompat !== false}
+                                onChange={(e) => handleChange('enableClaudeCodeCompat', e.target.checked)}
+                            />
+                            <span className="checkmark"></span>
+                            兼容ClaudeCode生态
+                        </label>
+                    </div>
                 </div>
             </div>
 

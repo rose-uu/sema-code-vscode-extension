@@ -12,5 +12,6 @@ export const defaultConfig = {
     systemPrompt: "You are Sema, AIRC's Agent AI for coding.",
     customRules: "- 中文回答",
     enableLLMCache: false,
+    enableClaudeCodeCompat: true,
     useTools: null  // null 表示使用所有工具，string[] 表示只使用指定工具
 };
