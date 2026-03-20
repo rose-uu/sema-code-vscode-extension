@@ -236,6 +236,8 @@
     background-color: var(--vscode-sideBar-background);
     padding: 6px 8px;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 300px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;

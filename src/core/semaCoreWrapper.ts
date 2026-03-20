@@ -120,7 +120,7 @@ export class SemaCoreWrapper {
 
         const config: SemaCoreConfig = {
             workingDir,
-            logLevel: 'debug',
+            logLevel: 'error',
             ...systemConfig,
             useTools: useTools
         };

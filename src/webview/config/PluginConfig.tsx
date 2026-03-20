@@ -117,7 +117,10 @@ const InstalledPluginCard: React.FC<{
                 <PluginNameIcon name={plugin.name} />
                 <span className="agent-name">{displayName}</span>
                 {isReadonly && (
-                    <span className="readonly-tab">只读</span>
+                    <>
+                        <span className="readonly-tab">只读</span>
+                        <span className="readonly-tab">{plugin.from}</span>
+                    </>
                 )}
                 {!isReadonly && (
                     <div className="plugin-card-actions" onClick={(e) => e.stopPropagation()}>

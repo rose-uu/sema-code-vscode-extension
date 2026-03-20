@@ -210,6 +210,9 @@ const SkillConfig: React.FC<SkillConfigProps> = ({ vscode }) => {
                         {isReadonly && (
                             <span className="readonly-tab">只读</span>
                         )}
+                        {skill.from && skill.from !== 'sema' && (
+                            <span className="readonly-tab">{skill.from}</span>
+                        )}
                     </div>
                     {!isReadonly && (
                         <div className="agent-card-actions">

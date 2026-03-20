@@ -131,6 +131,9 @@ const CommandConfig: React.FC<CommandConfigProps> = ({ vscode }) => {
                         {isReadonly && (
                             <span className="readonly-tab">只读</span>
                         )}
+                        {cmd.from && cmd.from !== 'sema' && (
+                            <span className="readonly-tab">{cmd.from}</span>
+                        )}
                     </div>
                     {!isReadonly && (
                         <div className="agent-card-actions">

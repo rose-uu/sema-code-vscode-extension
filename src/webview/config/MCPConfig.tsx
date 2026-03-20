@@ -123,6 +123,9 @@ const MCPServerCard: React.FC<{
                     <span className="mcp-error-hint" title={(server as any).error}>!</span>
                 )}
                 {!canEdit && <span className="readonly-tab">只读</span>}
+                {scope === 'external' && ((server.config as any)?.from || (server as any)?.from) && (
+                    <span className="readonly-tab">{(server.config as any)?.from || (server as any)?.from}</span>
+                )}
                 <div className="agent-card-actions" onClick={(e) => e.stopPropagation()}>
                     <button
                         className="mcp-icon-btn"

@@ -220,6 +220,9 @@ const AgentConfig: React.FC<AgentConfigProps> = ({ vscode }) => {
                         {isReadonly && (
                             <span className="readonly-tab">只读</span>
                         )}
+                        {agent.from && agent.from !== 'sema' && (
+                            <span className="readonly-tab">{agent.from}</span>
+                        )}
                     </div>
                     {!isReadonly && (
                         <div className="agent-card-actions">
