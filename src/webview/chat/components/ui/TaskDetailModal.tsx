@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useMemo, useRef, useState } from 'react';
 import { Message, VscodeApi } from '../../types';
 import EditBlock from '../../blocks/tools/EditBlock';
+import NotebookEditBlock from '../../blocks/tools/NotebookEditBlock';
 import ReadBlock from '../../blocks/tools/ReadBlock';
 import PubBlock from '../../blocks/tools/PubBlock';
 import BashBlock from '../../blocks/tools/BashBlock';
@@ -120,9 +121,17 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         switch (message.toolName) {
             case 'Write':
             case 'Edit':
-            case 'NotebookEdit':
                 return (
                     <EditBlock
+                        key={key}
+                        content={message.content}
+                        vscode={vscode}
+                    />
+                );
+
+            case 'NotebookEdit':
+                return (
+                    <NotebookEditBlock
                         key={key}
                         content={message.content}
                         vscode={vscode}
@@ -190,8 +199,12 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     );
 
                 case 'system':
-                    if (message.content.type === 'interrupt') {
-                        return <SupplementaryInfo key={key} items={['interrupted']} />;
+                    if (message.content.type === 'interrupted') {
+                        const USER_INTERRUPT_MESSAGE = '[Request interrupted by user]';
+                        if (message.content.content === USER_INTERRUPT_MESSAGE) {
+                            return <SupplementaryInfo key={key} items={['interrupted']} />;
+                        }
+                        return null;
                     }
                     else if (message.content.type === 'tool_error') {
                         return (

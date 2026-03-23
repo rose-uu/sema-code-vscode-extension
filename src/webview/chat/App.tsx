@@ -613,8 +613,12 @@ const App: React.FC<AppProps> = ({ vscode }) => {
                     );
 
                 case 'system':
-                    if (message.content.type === 'interrupt') {
-                        return <SupplementaryInfo key={key} items={['interrupted']} />
+                    if (message.content.type === 'interrupted') {
+                        const USER_INTERRUPT_MESSAGE = '[Request interrupted by user]';
+                        if (message.content.content === USER_INTERRUPT_MESSAGE) {
+                            return <SupplementaryInfo key={key} items={['interrupted']} />;
+                        }
+                        return null;
                     }
                     else if (message.content.type === 'tool_error') {
                         return (
