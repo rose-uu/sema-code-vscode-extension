@@ -164,6 +164,11 @@ body.vscode-light .bash-permission-content {
 }
 
 /* Bash内容区域样式 */
+.bash-permission-bash-body {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
 .bash-permission-bash-command {
     margin: 20px 10px 0px 20px;
 }
@@ -272,6 +277,8 @@ body.vscode-light .bash-permission-content {
     line-height: 1.6;
     white-space: pre-wrap;
     word-wrap: break-word;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 /* Skill权限内容区域样式 */

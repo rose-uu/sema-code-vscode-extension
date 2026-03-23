@@ -39,6 +39,21 @@
     white-space: nowrap;
 }
 
+.bash-streaming-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    flex-shrink: 0;
+    animation: bash-streaming-pulse 1s ease-in-out infinite;
+}
+
+@keyframes bash-streaming-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
 .bash-toggle-btn {
     display: none;
     align-items: center;
@@ -67,6 +82,8 @@
     margin-bottom: 8px;
     background-color: transparent;
     width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .bash-command pre {
@@ -102,7 +119,7 @@
 .bash-output {
     margin: 0;
     padding: 0;
-    max-height: 80px;
+    max-height: 500px;
     overflow-y: auto;
     white-space: pre;
     font-size: 12px;

@@ -89,4 +89,5 @@ export interface ToolContent {
     title: string;
     summary?: string;
     content: string | DiffContent;  // 支持字符串（旧格式）或 DiffContent 对象（新格式）
+    completed?: boolean;  // undefined 表示旧数据，false 表示流式中间态，true 表示完成
 }

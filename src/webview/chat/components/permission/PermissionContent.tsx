@@ -240,11 +240,13 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
                         <strong className="file-permission-action">Bash command</strong>
                     </div>
                 </div>
-                <div className="bash-permission-bash-command">
-                    <BaseBashContent command={title} />
-                </div>
-                <div className="bash-permission-bash-description">
-                    {typeof content === 'string' ? content : JSON.stringify(content, null, 2)}
+                <div className="bash-permission-bash-body">
+                    <div className="bash-permission-bash-command">
+                        <BaseBashContent command={title} />
+                    </div>
+                    <div className="bash-permission-bash-description">
+                        {typeof content === 'string' ? content : JSON.stringify(content, null, 2)}
+                    </div>
                 </div>
             </div>
         );

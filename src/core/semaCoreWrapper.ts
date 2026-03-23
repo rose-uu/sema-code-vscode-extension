@@ -23,7 +23,8 @@ import {
     PlanExitResponseData,
     PlanImplementData,
     FileReferenceData,
-    MCPServerStatusData
+    MCPServerStatusData,
+    ToolExecutionChunkData
 } from 'sema-core/event';
 import {
     SemaCoreConfig,
@@ -105,6 +106,9 @@ export class SemaCoreWrapper {
 
     // 子代理任务管理：taskId -> 主消息历史中的消息引用
     private taskAgentMap: Map<string, Message> = new Map();
+
+    // 流式工具消息管理：toolId -> 主消息历史中的消息引用
+    private streamingToolMap: Map<string, Message> = new Map();
 
     constructor(workingDir: string, private callbacks: SemaWrapperCallbacks, systemConfigManager: SystemConfigManager) {
         this.systemConfigManager = systemConfigManager;
@@ -441,16 +445,44 @@ export class SemaCoreWrapper {
             this.callbacks.onToolPermissionRequest?.(data);
         });
 
-        this.semaCore.on<ToolExecutionCompleteData & { agentId?: string }>('tool:execution:complete', (data) => {
-            // console.log('Tool execution complete:', data);
+        this.semaCore.on<ToolExecutionChunkData & { agentId?: string }>('tool:execution:chunk', (data) => {
+            // console.log('tool:execution:chunk:', data);
+            // 检查是否为子代理消息
+            const agentId = data.agentId;
+            if (agentId && agentId !== MAIN_AGENT_ID) {
+                return;
+            }
 
+            const toolId = data.toolId;
+            if (toolId && this.streamingToolMap.has(toolId)) {
+                // 更新已有流式消息（原地修改，保持引用不变）
+                const existingMessage = this.streamingToolMap.get(toolId)!;
+                existingMessage.content = { ...data, completed: false };
+            } else {
+                // 创建新流式消息
+                const newMessage: Message = {
+                    type: 'tool',
+                    content: { ...data, completed: false },
+                    toolName: data.toolName,
+                    timestamp: Date.now()
+                };
+                this.messageHistory.push(newMessage);
+                if (toolId) {
+                    this.streamingToolMap.set(toolId, newMessage);
+                }
+            }
+            this.sendContentUpdate();
+        });
+
+        this.semaCore.on<ToolExecutionCompleteData & { agentId?: string }>('tool:execution:complete', (data) => {
+            // console.log('tool:execution:complete:', data);
             // 检查是否为子代理消息
             const agentId = data.agentId;
             if (agentId && agentId !== MAIN_AGENT_ID) {
                 // 子代理工具执行完成，添加到对应的 taskMessages 中
                 this.addMessageToTaskAgent(agentId, {
                     type: 'tool',
-                    content: data,
+                    content: { ...data, completed: true },
                     toolName: data.toolName,
                     timestamp: Date.now()
                 });
@@ -462,12 +494,20 @@ export class SemaCoreWrapper {
                 return;
             }
 
-            this.messageHistory.push({
-                type: 'tool',
-                content: data,
-                toolName: data.toolName,
-                timestamp: Date.now()
-            });
+            const toolId = data.toolId;
+            if (toolId && this.streamingToolMap.has(toolId)) {
+                // 用完整数据替换流式消息内容
+                const existingMessage = this.streamingToolMap.get(toolId)!;
+                existingMessage.content = { ...data, completed: true };
+                this.streamingToolMap.delete(toolId);
+            } else {
+                this.messageHistory.push({
+                    type: 'tool',
+                    content: { ...data, completed: true },
+                    toolName: data.toolName,
+                    timestamp: Date.now()
+                });
+            }
             this.sendContentUpdate();
         });
 
@@ -800,6 +840,7 @@ export class SemaCoreWrapper {
         this.messageHistory = [];
         this.title = '';
         this.taskAgentMap.clear(); // 清理子代理映射
+        this.streamingToolMap.clear(); // 清理流式工具映射
         this.sendContentUpdate();
     }
 
@@ -1290,6 +1331,7 @@ export class SemaCoreWrapper {
             this.currentStreamingMessage = null;
             this.title = '';
             this.taskAgentMap.clear(); // 清理子代理映射
+            this.streamingToolMap.clear(); // 清理流式工具映射
 
             // 清空回调函数
             this.callbacks = {};
